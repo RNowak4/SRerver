@@ -1,7 +1,7 @@
-package clients;
+package server.clients;
 
-import clients.api.Client;
-import clients.api.Sid;
+import server.clients.api.Client;
+import server.clients.api.Sid;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;

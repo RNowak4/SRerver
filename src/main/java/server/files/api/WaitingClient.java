@@ -1,4 +1,4 @@
-package files.api;
+package server.files.api;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

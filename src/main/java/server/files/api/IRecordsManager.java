@@ -1,13 +1,8 @@
-package files.api;
+package server.files.api;
 
 import io.vavr.collection.List;
 
-public interface IFilesManager {
-    List<FileDescriptor> getAllFiles();
-
-    void createNew(FileDescriptor fileDescriptor);
-
-    void delete(String fileId);
+public interface IRecordsManager {
 
     List<RecordDescriptor> getRecordsForFile(String fileId);
 

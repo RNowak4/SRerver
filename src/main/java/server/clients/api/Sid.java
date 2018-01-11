@@ -1,4 +1,4 @@
-package clients.api;
+package server.clients.api;
 
 import java.util.Objects;
 

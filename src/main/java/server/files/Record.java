@@ -1,6 +1,7 @@
-package files.api;
+package server.files;
 
 import io.vavr.control.Option;
+import server.files.api.WaitingClient;
 
 import java.util.Arrays;
 import java.util.Objects;

@@ -1,4 +1,4 @@
-package clients.api;
+package server.clients.api;
 
 import io.vavr.collection.List;
 import io.vavr.control.Option;

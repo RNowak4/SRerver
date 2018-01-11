@@ -1,20 +1,25 @@
-package files.api;
+package server.files;
 
 import io.vavr.collection.HashSet;
 import io.vavr.collection.List;
 import io.vavr.collection.Set;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
+import server.files.api.WaitingClient;
 
 import java.util.Objects;
 import java.util.UUID;
 
-public class File {
+public class ServerFile {
     private static final int maxRecords = 128;
 
     private String name;
     private List<Record> records = List.empty();
     private Set<String> openedByUserIds = HashSet.empty();
+
+    public ServerFile(String name) {
+        this.name = name;
+    }
 
     public Try<Void> addRecord(final Record record) {
         if (records.size() + 1 >= maxRecords) {
@@ -85,10 +90,10 @@ public class File {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        File file = (File) o;
-        return Objects.equals(name, file.name) &&
-                Objects.equals(records, file.records) &&
-                Objects.equals(openedByUserIds, file.openedByUserIds);
+        ServerFile serverFile = (ServerFile) o;
+        return Objects.equals(name, serverFile.name) &&
+                Objects.equals(records, serverFile.records) &&
+                Objects.equals(openedByUserIds, serverFile.openedByUserIds);
     }
 
     @Override
@@ -98,7 +103,7 @@ public class File {
 
     @Override
     public String toString() {
-        return "File{" +
+        return "ServerFile{" +
                 "name='" + name + '\'' +
                 ", records=" + records +
                 ", openedByUserIds=" + openedByUserIds +

@@ -1,8 +1,8 @@
-package clients;
+package server.clients;
 
-import clients.api.Client;
-import clients.api.IClientManager;
-import clients.api.Sid;
+import server.clients.api.Client;
+import server.clients.api.IClientManager;
+import server.clients.api.Sid;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
 import io.vavr.control.Try;

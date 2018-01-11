@@ -1,6 +1,6 @@
-package rest;
+package server.rest;
 
-import clients.api.IClientManager;
+import server.clients.api.IClientManager;
 import org.springframework.stereotype.Service;
 
 @Service
