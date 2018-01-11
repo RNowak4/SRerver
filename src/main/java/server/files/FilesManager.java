@@ -1,7 +1,5 @@
 package server.files;
 
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
@@ -10,42 +8,59 @@ import org.springframework.stereotype.Component;
 import server.files.api.IFilesManager;
 import server.utils.HasLogger;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-
 @Component
 class FilesManager implements HasLogger, IFilesManager {
-    private final File dir = new File("/home/radek/repo");
-    private Map<String, Tuple2<ServerFile, File>> filesMap = HashMap.empty();
+    private final SystemFileManager systemFileManager;
+    private Map<String, ServerFile> filesMap = HashMap.empty();
+
+    FilesManager(final SystemFileManager systemFileManager) {
+        this.systemFileManager = systemFileManager;
+    }
 
     @Override
     public List<ServerFile> getAllFiles() {
-        return filesMap.values().map(value -> value._1).collect(List.collector());
+        return filesMap.values().toList();
     }
 
     @Override
     public Try<Void> createNew(final String fileName) {
-        return Try.of(() -> new File(dir, fileName))
-                .andThenTry(File::createNewFile)
-                .map(res -> Tuple.of(new ServerFile(fileName), res))
+        return systemFileManager.newFile(fileName)
+                .map(res -> new ServerFile(fileName))
                 .onSuccess(fileTuple -> filesMap = filesMap.put(fileName, fileTuple))
                 .onSuccess(v -> getLogger().info("Successfully created file: {}.", fileName))
-                .onFailure(th -> getLogger().error("Error while tryng to create file: {}.", fileName))
+                .onFailure(th -> getLogger().error("Error while trying to create file: {}.", fileName))
                 .map(v -> null);
     }
 
     @Override
     public void delete(String fileId) {
-        // TODO refactor
-        Try.run(() -> filesMap.get(fileId)
-                .forEach(idFileMap -> {
-                    try {
-                        Files.delete(idFileMap._2.toPath());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }))
+        systemFileManager.deleteFile(fileId)
                 .onSuccess(v -> filesMap = filesMap.remove(fileId));
     }
+
+    @Override
+    public void createNewRecord(String fileId, String userId, String content) {
+        filesMap.get(fileId)
+                .forEach(serverFile -> serverFile.createRecord(content.toCharArray()));
+    }
+
+    @Override
+    public void modifyRecord(String fileId, String recordId, String userId, String content) {
+        filesMap.get(fileId)
+                .forEach(serverFile -> serverFile.modifyRecord(recordId, userId, content));
+    }
+
+    @Override
+    public void deleteRecord(String fileId, String recordId, String userId) {
+        filesMap.get(fileId)
+                .map(serverFile -> serverFile.deleteRecord(recordId, userId));
+    }
+
+    @Override
+    public List<Record> getRecordsForFile(String fileName) {
+        return filesMap.get(fileName)
+                .map(ServerFile::getRecords)
+                .getOrElse(List.empty());
+    }
+
 }

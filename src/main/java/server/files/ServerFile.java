@@ -8,7 +8,6 @@ import io.vavr.control.Try;
 import server.files.api.WaitingClient;
 
 import java.util.Objects;
-import java.util.UUID;
 
 public class ServerFile {
     private static final int maxRecords = 128;
@@ -52,8 +51,7 @@ public class ServerFile {
     }
 
     public Try<Record> createRecord(char[] content) {
-        // TODO builder
-        final Record record = new Record(UUID.randomUUID().toString());
+        final Record record = new Record(String.valueOf(records.size()));
         return Try.of(() -> {
             record.setData(content);
             return record;
@@ -67,15 +65,6 @@ public class ServerFile {
                 .getOrElse(false);
     }
 
-    public Try<Void> editRecord(final char[] content, final String userId, final String recordId) {
-        return getRecord(recordId)
-                .filter(record -> isUserAllowedToEditRecord(record, userId))
-                // TODO set data should return Try<Void>
-                .peek(record -> record.setData(content))
-                .toTry()
-                .map(v -> null);
-    }
-
     public void lockRecord(final String userId, final String recordId) {
         getRecord(recordId)
                 .forEach(record -> record.lock(Option.of(new WaitingClient(userId))));
@@ -84,6 +73,15 @@ public class ServerFile {
     public void unlockRecord(final String userId, final String recordId) {
         getRecord(recordId)
                 .forEach(record -> record.unlock(userId));
+    }
+
+    public Try<Void> modifyRecord(String recordId, String userId, String content) {
+        return getRecord(recordId)
+                .filter(record -> isUserAllowedToEditRecord(record, userId))
+                // TODO set data should return Try<Void>
+                .peek(record -> record.setData(content.toCharArray()))
+                .toTry()
+                .map(v -> null);
     }
 
     @Override

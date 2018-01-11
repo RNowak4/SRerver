@@ -1,10 +1,9 @@
 package server.rest;
 
 import org.springframework.web.bind.annotation.*;
-import server.files.api.IFilesManager;
-import server.files.api.IRecordsManager;
-import server.files.api.RecordDescriptor;
 import server.files.ServerFile;
+import server.files.api.IFilesManager;
+import server.files.api.RecordDto;
 
 import java.util.List;
 
@@ -12,12 +11,9 @@ import java.util.List;
 @RequestMapping(path = "/files")
 public class FilesController {
     private IFilesManager filesManager;
-    private IRecordsManager recordsManager;
 
-    public FilesController(final IFilesManager filesManager,
-                           final IRecordsManager recordsManager) {
+    public FilesController(final IFilesManager filesManager) {
         this.filesManager = filesManager;
-        this.recordsManager = recordsManager;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -28,7 +24,7 @@ public class FilesController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public void addNewFile(@RequestParam("name") final String name  ) {
+    public void addNewFile(@RequestParam("name") final String name) {
         filesManager.createNew(name).get();
     }
 
@@ -38,26 +34,31 @@ public class FilesController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/{id}/records")
-    public List<RecordDescriptor> getAllRecords(@PathVariable("id") final String fileId) {
-        return recordsManager.getRecordsForFile(fileId).toJavaList();
+    public List<RecordDto> getAllRecords(@PathVariable("id") final String fileName) {
+        return filesManager.getRecordsForFile(fileName).toStream()
+                .map(record -> new RecordDto(record.getId(), fileName, record.getData(), "status"))
+                .toJavaList();
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/{id}/records")
     public void addNewRecord(@PathVariable("id") final String fileId,
-                             final RecordDescriptor recordDescriptor) {
-        recordsManager.createNewRecord(fileId, recordDescriptor);
+                             @RequestParam("userId") final String userId,
+                             @RequestBody final String content) {
+        filesManager.createNewRecord(fileId, userId, content);
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/{id}/records/{recordId}")
     public void modifyRecord(@PathVariable("id") final String fileId,
                              @PathVariable("recordId") final String recordId,
-                             final RecordDescriptor recordDescriptor) {
-        recordsManager.modifyRecord(fileId, recordId, recordDescriptor);
+                             @RequestParam("userId") final String userId,
+                             @RequestBody final String content) {
+        filesManager.modifyRecord(fileId, recordId, userId, content);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/{id}/records/{recordId}")
     public void deleteRecord(@PathVariable("id") final String fileId,
-                             @PathVariable("recordId") final String recordId) {
-        recordsManager.deleteRecord(fileId, recordId);
+                             @PathVariable("recordId") final String recordId,
+                             @RequestParam("userId") final String userId) {
+        filesManager.deleteRecord(fileId, recordId, userId);
     }
 }
