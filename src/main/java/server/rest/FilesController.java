@@ -24,7 +24,7 @@ public class FilesController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public void addNewFile(@RequestParam("name") final String name) {
+    public void addNewFile(@RequestHeader("name") final String name) {
         filesManager.createNew(name).get();
     }
 
@@ -42,7 +42,7 @@ public class FilesController {
 
     @RequestMapping(method = RequestMethod.POST, path = "/{id}/records")
     public void addNewRecord(@PathVariable("id") final String fileId,
-                             @RequestParam("userId") final String userId,
+                             @RequestHeader("userId") final String userId,
                              @RequestBody final String content) {
         filesManager.createNewRecord(fileId, userId, content);
     }

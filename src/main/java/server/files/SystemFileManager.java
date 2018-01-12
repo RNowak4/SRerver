@@ -6,6 +6,7 @@ import io.vavr.control.Try;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 
 @Component
@@ -28,7 +29,26 @@ class SystemFileManager {
                 .map(v -> null);
     }
 
-    Try<String> addRecord(final String fileName) {
-        return Try.of(() -> "0");
+    Try<Void> addRecord(final ServerFile serverFile, final Record record) {
+        return systemFilesMap.get(serverFile.getName())
+                .toTry()
+                .mapTry(file -> new RandomAccessFile(file, "rwd"))
+                .andThenTry(file -> {
+                    file.setLength(file.length() + 1024);
+                    file.seek(Integer.valueOf(record.getId()) * 1024);
+                    file.writeChars(String.valueOf(record.getData()));
+                })
+                .map(v -> null);
+    }
+
+    Try<Void> modifyRecord(final ServerFile serverFile, final Record record, final char[] content) {
+        return systemFilesMap.get(serverFile.getName())
+                .toTry()
+                .mapTry(file -> new RandomAccessFile(file, "rwd"))
+                .andThenTry(file -> {
+                    file.seek(Integer.valueOf(record.getId()) * 1024);
+                    file.writeChars(String.valueOf(record.getData()));
+                })
+                .map(v -> null);
     }
 }

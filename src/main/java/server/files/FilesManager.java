@@ -41,7 +41,10 @@ class FilesManager implements HasLogger, IFilesManager {
     @Override
     public void createNewRecord(String fileId, String userId, String content) {
         filesMap.get(fileId)
-                .forEach(serverFile -> serverFile.createRecord(content.toCharArray()));
+                .forEach(serverFile -> serverFile.createRecord(content.toCharArray())
+                        .onSuccess(record -> systemFileManager.addRecord(serverFile, record))
+                        .onFailure(th -> getLogger().error("Error while creating record.", th))
+                );
     }
 
     @Override

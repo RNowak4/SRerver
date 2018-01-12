@@ -52,6 +52,7 @@ public class ServerFile {
 
     public Try<Record> createRecord(char[] content) {
         final Record record = new Record(String.valueOf(records.size()));
+        records = records.append(record);
         return Try.of(() -> {
             record.setData(content);
             return record;
