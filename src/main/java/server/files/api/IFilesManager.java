@@ -17,7 +17,7 @@ public interface IFilesManager {
 
     Try<Record> modifyRecord(String fileId, String recordId, String userId, String content);
 
-    Try<Void> deleteRecord(String fileId, String recordId, String userId);
+    Try<Record> deleteRecord(String fileId, String recordId, String userId);
 
     List<Record> getRecordsForFile(String fileName);
 

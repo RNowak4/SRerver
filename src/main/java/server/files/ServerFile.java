@@ -13,20 +13,13 @@ import java.util.Objects;
 public class ServerFile implements HasLogger {
     private static final int maxRecords = 128;
 
+    private long recordIdCounter = 0;
     private String name;
     private List<Record> records = List.empty();
     private Set<String> openedByUserIds = HashSet.empty();
 
     public ServerFile(String name) {
         this.name = name;
-    }
-
-    public Try<Void> addRecord(final Record record) {
-        if (records.size() + 1 >= maxRecords) {
-            return Try.failure(new RuntimeException("Exceeded records max size."));
-        }
-
-        return Try.run(() -> records.append(record));
     }
 
     public Set<String> getOpenedByUserIds() {
@@ -47,21 +40,38 @@ public class ServerFile implements HasLogger {
                 .headOption();
     }
 
-    public Try<Void> deleteRecord(final String recordId, final String userId) {
+    public Try<Record> deleteRecord(final String recordId, final String userId) {
         return getRecord(recordId)
                 .filter(record -> isUserAllowedToEditRecord(record, userId))
                 .peek(record -> records = records.remove(record))
-                .toTry()
-                .map(v -> null);
+                .toTry();
     }
 
     public Try<Record> createRecord(char[] content) {
-        final Record record = new Record(String.valueOf(records.size()));
+        final Record record = new Record(String.valueOf(recordIdCounter++), firstFreePos());
         records = records.append(record);
         return Try.of(() -> {
             record.setData(content);
             return record;
         });
+    }
+
+    private long firstFreePos() {
+        final List<Long> sortedPositions = records.toStream()
+                .map(Record::getPosition)
+                .sorted()
+                .collect(List.collector());
+
+        int pos = 0;
+        for (Long sortedPosition : sortedPositions) {
+            if(sortedPosition == pos) {
+                pos++;
+            } else {
+                return pos;
+            }
+        }
+
+        return pos;
     }
 
     private boolean isUserAllowedToEditRecord(final Record record, final String userId) {

@@ -11,8 +11,10 @@ import java.nio.file.Files;
 
 @Component
 class SystemFileManager {
+    private static final char[] EMPTY_CHAR = new char[1024];
     private static final File dir = new File("/home/radek/repo");
     private Map<String, File> systemFilesMap = HashMap.empty();
+
 
     Try<Void> newFile(final String fileName) {
         return Try.of(() -> new File(dir, fileName))
@@ -35,7 +37,7 @@ class SystemFileManager {
                 .mapTry(file -> new RandomAccessFile(file, "rwd"))
                 .andThenTry(file -> {
                     file.setLength(file.length() + 1024);
-                    file.seek(Integer.valueOf(record.getId()) * 1024);
+                    file.seek(record.getPosition() * 1024);
                     file.writeChars(String.valueOf(record.getData()));
                 })
                 .map(v -> null);
@@ -46,8 +48,19 @@ class SystemFileManager {
                 .toTry()
                 .mapTry(file -> new RandomAccessFile(file, "rwd"))
                 .andThenTry(file -> {
-                    file.seek(Integer.valueOf(record.getId()) * 1024);
-                    file.writeChars(String.valueOf(record.getData()));
+                    file.seek(record.getPosition() * 1024);
+                    file.writeChars(String.valueOf(content));
+                })
+                .map(v -> null);
+    }
+
+    Try<Void> removeRecord(final ServerFile serverFile, final Record record) {
+        return systemFilesMap.get(serverFile.getName())
+                .toTry()
+                .mapTry(file -> new RandomAccessFile(file, "rwd"))
+                .andThenTry(file -> {
+                    file.seek(record.getPosition() * 1024);
+                    file.writeChars(String.valueOf(EMPTY_CHAR));
                 })
                 .map(v -> null);
     }

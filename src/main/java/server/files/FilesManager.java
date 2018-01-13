@@ -78,14 +78,17 @@ class FilesManager implements HasLogger, IFilesManager {
     }
 
     @Override
-    public Try<Void> deleteRecord(String fileId, String recordId, String userId) {
+    public Try<Record> deleteRecord(String fileId, String recordId, String userId) {
         return filesMap.get(fileId)
                 .toTry()
                 .flatMap(serverFile -> serverFile.deleteRecord(recordId, userId)
-                        .onSuccess(v -> notifyListeningClients(serverFile,
-                                new RecordRemovedMessage("RECORD_REMOVED",
-                                        recordId,
-                                        fileId))
+                        .onSuccess(record -> {
+                                    systemFileManager.removeRecord(serverFile, record);
+                                    notifyListeningClients(serverFile,
+                                            new RecordRemovedMessage("RECORD_REMOVED",
+                                                    recordId,
+                                                    fileId));
+                                }
                         ));
     }
 

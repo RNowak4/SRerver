@@ -13,12 +13,14 @@ public class Record {
     private static final int size = 1024;
 
     private char[] data = new char[size];
+    private long position;
     private String id;
     private AtomicReference<Option<WaitingClient>> lockedBy = new AtomicReference<>(Option.none());
     private Queue<WaitingClient> lockingQueue = new LinkedBlockingQueue<>();
 
-    public Record(String id) {
+    public Record(String id, long position) {
         this.id = id;
+        this.position = position;
     }
 
     public char[] getData() {
@@ -52,8 +54,8 @@ public class Record {
     }
 
     public void unlock(final String userId) {
-        if(lockedBy.get().isDefined() && lockedBy.get().get().getId().equals(userId)) {
-            if(lockingQueue.isEmpty()) {
+        if (lockedBy.get().isDefined() && lockedBy.get().get().getId().equals(userId)) {
+            if (lockingQueue.isEmpty()) {
                 lockedBy.set(Option.none());
             } else {
                 lockedBy.set(Option.of(lockingQueue.poll()));
@@ -93,5 +95,13 @@ public class Record {
                 ", lockedBy=" + lockedBy +
                 ", lockingQueue=" + lockingQueue +
                 '}';
+    }
+
+    public long getPosition() {
+        return position;
+    }
+
+    public void setPosition(long position) {
+        this.position = position;
     }
 }
