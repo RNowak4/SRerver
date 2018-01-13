@@ -13,11 +13,19 @@ public interface IFilesManager {
 
     void delete(String fileId);
 
-    void createNewRecord(String fileId, String userId, String content);
+    Try<String> createNewRecord(String fileId, String userId, String content);
 
-    void modifyRecord(String fileId, String recordId, String userId, String content);
+    Try<Record> modifyRecord(String fileId, String recordId, String userId, String content);
 
-    void deleteRecord(String fileId, String recordId, String userId);
+    Try<Void> deleteRecord(String fileId, String recordId, String userId);
 
     List<Record> getRecordsForFile(String fileName);
+
+    void lockRecord(String filename, String recordId, String userName);
+
+    void unlockRecord(String filename, String recordId, String userName);
+
+    void addOpenedBy(String userId, String file);
+
+    void removeOpenedBy(String userId, String file);
 }

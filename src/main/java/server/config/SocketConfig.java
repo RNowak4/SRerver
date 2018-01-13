@@ -1,24 +1,75 @@
 package server.config;
 
+import com.corundumstudio.socketio.SocketIOServer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer;
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
-import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import server.clients.api.messages.AuthorizeMessage;
+import server.clients.api.messages.FileStateChangeMessage;
+import server.clients.api.messages.RecordChangeMessage;
+import server.files.api.IFilesManager;
+import server.utils.HasLogger;
 
 @Configuration
-@EnableWebSocketMessageBroker
-public class SocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
+public class SocketConfig implements HasLogger {
+    private final IFilesManager filesManager;
 
-    @Override
-    public void registerStompEndpoints(StompEndpointRegistry stompEndpointRegistry) {
-        stompEndpointRegistry.addEndpoint("/ws").withSockJS();
+    public SocketConfig(IFilesManager filesManager) {
+        this.filesManager = filesManager;
     }
 
-    @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/queue/", "/topic/", "/exchange/");
-        //registry.enableStompBrokerRelay("/queue/", "/topic/", "/exchange/");
-        registry.setApplicationDestinationPrefixes("/app");
+    @Bean(name = "webSocketServer")
+    public SocketIOServer webSocketServer() {
+
+        com.corundumstudio.socketio.Configuration config = new com.corundumstudio.socketio.Configuration();
+        config.setHostname("localhost");
+        config.setPort(9998);
+
+        final SocketIOServer server = new SocketIOServer(config);
+
+        server.addConnectListener(client -> {
+                    System.out.println(client.getSessionId());
+
+                }
+        );
+
+        server.addEventListener("authorize", AuthorizeMessage.class, (client, data, ackSender) -> {
+            getLogger().info("Authorizing client: {}.", data.getUserId());
+            client.joinRoom(data.getUserId());
+            getLogger().info("Client: {} joined private room.", data.getUserId());
+        });
+
+
+        server.addEventListener("record_state_change", RecordChangeMessage.class, (client, data, ackSender) -> {
+            if("LOCK_RECORD".equals(data.getEventType())) {
+                filesManager.lockRecord(data.getFile(), data.getRecord(), data.getUserId());
+            } else {
+                filesManager.unlockRecord(data.getFile(), data.getRecord(), data.getUserId());
+            }
+        });
+
+        server.addEventListener("file_state_change", FileStateChangeMessage.class, (client, data, ackSender) -> {
+            if("OPEN_FILE".equals(data.getEventType())){
+                filesManager.addOpenedBy(data.getUserId(), data.getFile());
+            } else {
+                filesManager.removeOpenedBy(data.getUserId(), data.getFile());
+            }
+            ackSender.sendAckData();
+        });
+
+        return server;
     }
-}
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurerAdapter() {
+
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/files/**").allowedOrigins("http://localhost:3000");
+            }
+        };
+    }
+ }

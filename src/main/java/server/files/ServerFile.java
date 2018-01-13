@@ -6,10 +6,11 @@ import io.vavr.collection.Set;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import server.files.api.WaitingClient;
+import server.utils.HasLogger;
 
 import java.util.Objects;
 
-public class ServerFile {
+public class ServerFile implements HasLogger {
     private static final int maxRecords = 128;
 
     private String name;
@@ -26,6 +27,10 @@ public class ServerFile {
         }
 
         return Try.run(() -> records.append(record));
+    }
+
+    public Set<String> getOpenedByUserIds() {
+        return openedByUserIds;
     }
 
     public String getName() {
@@ -67,6 +72,7 @@ public class ServerFile {
     }
 
     public void lockRecord(final String userId, final String recordId) {
+        getLogger().info("Locking recordId: {} by user: {}", recordId, userId);
         getRecord(recordId)
                 .forEach(record -> record.lock(Option.of(new WaitingClient(userId))));
     }
@@ -74,15 +80,22 @@ public class ServerFile {
     public void unlockRecord(final String userId, final String recordId) {
         getRecord(recordId)
                 .forEach(record -> record.unlock(userId));
+        getLogger().info("Unlocked recordId: {} by user: {}", recordId, userId);
     }
 
-    public Try<Void> modifyRecord(String recordId, String userId, String content) {
+    public Try<Record> modifyRecord(String recordId, String userId, String content) {
         return getRecord(recordId)
                 .filter(record -> isUserAllowedToEditRecord(record, userId))
-                // TODO set data should return Try<Void>
                 .peek(record -> record.setData(content.toCharArray()))
-                .toTry()
-                .map(v -> null);
+                .toTry();
+    }
+
+    public void addOpenedBy(String userId) {
+        openedByUserIds = openedByUserIds.add(userId);
+    }
+
+    public void removeOpenedBy(String userId) {
+        openedByUserIds = openedByUserIds.remove(userId);
     }
 
     @Override

@@ -14,14 +14,14 @@ class SystemFileManager {
     private static final File dir = new File("/home/radek/repo");
     private Map<String, File> systemFilesMap = HashMap.empty();
 
-    public Try<Void> newFile(final String fileName) {
+    Try<Void> newFile(final String fileName) {
         return Try.of(() -> new File(dir, fileName))
                 .andThenTry(file -> Files.createFile(file.toPath()))
                 .onSuccess(file -> systemFilesMap = systemFilesMap.put(fileName, file))
                 .map(v -> null);
     }
 
-    public Try<Void> deleteFile(final String fileName) {
+    Try<Void> deleteFile(final String fileName) {
         return systemFilesMap.get(fileName)
                 .toTry()
                 .andThenTry(file -> Files.delete(file.toPath()))
