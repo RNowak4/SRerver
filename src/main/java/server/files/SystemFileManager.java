@@ -36,7 +36,8 @@ class SystemFileManager {
                 .toTry()
                 .mapTry(file -> new RandomAccessFile(file, "rwd"))
                 .andThenTry(file -> {
-                    file.setLength(file.length() + 1024);
+                    file.seek(record.getPosition() * 1024);
+                    file.writeChars(String.valueOf(EMPTY_CHAR));
                     file.seek(record.getPosition() * 1024);
                     file.writeChars(String.valueOf(record.getData()));
                 })
@@ -48,6 +49,8 @@ class SystemFileManager {
                 .toTry()
                 .mapTry(file -> new RandomAccessFile(file, "rwd"))
                 .andThenTry(file -> {
+                    file.seek(record.getPosition() * 1024);
+                    file.writeChars(String.valueOf(EMPTY_CHAR));
                     file.seek(record.getPosition() * 1024);
                     file.writeChars(String.valueOf(content));
                 })
