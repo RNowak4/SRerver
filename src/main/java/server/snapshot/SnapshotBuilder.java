@@ -1,6 +1,7 @@
 package server.snapshot;
 
 import io.vavr.collection.List;
+import io.vavr.control.Option;
 import org.springframework.stereotype.Component;
 import server.files.ServerFile;
 import server.files.api.FileDescriptor;
@@ -39,11 +40,9 @@ public class SnapshotBuilder {
                 .map(record -> {
                     final WaitingClient lockedBy = record.getLockedBy().get().getOrNull();
                     final RecordDescriptor recordDescriptor = new RecordDescriptor(record.getId());
-                    if (lockedBy == null) {
-                        recordDescriptor.setLockedBy(null);
-                    } else {
-                        recordDescriptor.setLockedBy(lockedBy.getId());
-                    }
+                    recordDescriptor.setLockedBy(Option.of(lockedBy)
+                            .map(WaitingClient::getId)
+                            .getOrNull());
                     recordDescriptor.setWaiting(record.getLockingQueue().stream()
                             .map(WaitingClient::getId)
                             .collect(Collectors.toList())
