@@ -134,8 +134,7 @@ class FilesManager implements HasLogger, IFilesManager {
                 .toTry()
                 .peek(isLocked -> {
                     if (isLocked) {
-                        bootstrap.getServer().getRoomOperations(userName).sendEvent(RECORD_STATE_CHANGE,
-                                new LockAssignedMessage("LOCK_ASSIGNED", recordId, filename));
+                        sendLockPickedUpMessage(userName, recordId, filename);
                     }
                 })
                 .onSuccess(v -> getLogger().info("Successfully set lock to record: {} in file: {} by user: {}", recordId, filename, userName))
@@ -145,13 +144,36 @@ class FilesManager implements HasLogger, IFilesManager {
     @Override
     public void unlockRecord(final String filename, final String recordId, final String userName) {
         filesMap.get(filename)
-                .peek(serverFile -> serverFile.unlockRecord(userName, recordId))
                 .toTry()
                 .peek(serverFile ->
-                        bootstrap.getServer().getRoomOperations(userName).sendEvent(RECORD_STATE_CHANGE,
-                                new LockAssignedMessage("LOCK_PICKED_UP", recordId, filename)))
+                        serverFile.getRecord(recordId)
+                                .toTry()
+                                .peek(record -> record.getLockingQueue().forEach(waitingClient -> {
+                                    bootstrap.getServer().getRoomOperations(waitingClient.getUserId()).sendEvent(RECORD_STATE_CHANGE,
+                                            new LockAssignedMessage("LOCK_PICKED_UP", recordId, filename));
+                                    sendLockPickedUpMessage(waitingClient.getUserId(), recordId, filename);
+                                }))
+                                .andThen(() -> sendLockPickedUpMessage(userName, recordId, filename)))
+                .peek(serverFile -> serverFile.unlockRecord(userName, recordId))
+                .peek(serverFile -> serverFile.getRecord(recordId)
+                        .map(record -> record.getLockedBy().get())
+                        .forEach(lockedBy -> {
+                            if (lockedBy.isDefined()) {
+                                sendLockAssignedMessage(lockedBy.get().getUserId(), recordId, userName);
+                            }
+                        }))
                 .onSuccess(v -> getLogger().info("Successfully unlocked record: {} from file: {} by user: {}", recordId, filename, userName))
                 .onFailure(th -> getLogger().error("Error while trying to unset lock to record: {} in file: {} by user: {}", recordId, filename, userName, th));
+    }
+
+    private void sendLockAssignedMessage(final String userName, final String recordId, final String filename) {
+        bootstrap.getServer().getRoomOperations(userName).sendEvent(RECORD_STATE_CHANGE,
+                new LockAssignedMessage("LOCK_ASSIGNED", recordId, filename));
+    }
+
+    private void sendLockPickedUpMessage(final String userName, final String recordId, final String filename) {
+        bootstrap.getServer().getRoomOperations(userName).sendEvent(RECORD_STATE_CHANGE,
+                new LockAssignedMessage("LOCK_PICKED_UP", recordId, filename));
     }
 
     @Override

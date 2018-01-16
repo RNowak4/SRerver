@@ -2,7 +2,7 @@ package server.deadlock;
 
 import java.util.*;
 
-public class WaitingGraph {
+class WaitingGraph {
     private Map<String, Map<String, List<GraphEdge>>> graph = new HashMap<>();
 
     void addEdge(final GraphEdge e) {
@@ -24,7 +24,7 @@ public class WaitingGraph {
         }
     }
 
-    public void removeEdge(final GraphEdge e) {
+    void removeEdge(final GraphEdge e) {
         final String wUser = e.getWaitingUser();
         final String lUser = e.getLockingUser();
         graph.get(wUser).get(lUser).remove(e);
@@ -75,7 +75,7 @@ public class WaitingGraph {
 
         for (int i = 0; i < circleSize; i++) {
             final String u1 = circle.get(i);
-            final String u2 = circle.get((i+1)%circleSize);
+            final String u2 = circle.get((i + 1) % circleSize);
             final List<GraphEdge> edges = graph.get(u1).get(u2);
             final GraphEdge e = getYoungest(edges);
 
@@ -88,7 +88,7 @@ public class WaitingGraph {
 
     static GraphEdge getYoungest(final List<GraphEdge> edges) {
         return edges.stream()
-                .sorted(Comparator.comparing(GraphEdge::getTimestamp))
+                .sorted(Comparator.comparing(GraphEdge::getTimestamp).reversed())
                 .findFirst()
                 .get();
     }
