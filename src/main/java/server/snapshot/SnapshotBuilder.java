@@ -5,6 +5,8 @@ import server.files.api.*;
 import io.vavr.collection.List;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -15,17 +17,19 @@ public class SnapshotBuilder {
         this.filesManager = filesManager;
     }
 
-    public Snapshot makeSnapshot(final String id) {
-        final Snapshot snapshot = new Snapshot(id);
+    public Snapshot2 makeSnapshot(final String id) {
+        final Snapshot2 snaphot2 = new Snapshot2();
 
         filesManager.getAllFiles().toStream()
-                .map(this::fileSnapshot)
-                .forEach(snapshot::addFileDescriptor);
+                .forEach(file -> {
+                    final Map<String, RecordSnapshot> snap = fileSnapshot(file);
+                    snaphot2.getSnapshot().put(file.getName(), snap);
+                });
 
-        return snapshot;
+        return snaphot2;
     }
 
-    private FileDescriptor fileSnapshot(final ServerFile serverFile) {
+    private Map<String, RecordSnapshot> fileSnapshot(final ServerFile serverFile) {
         final FileDescriptor fileDescriptor = new FileDescriptor(serverFile.getName());
 
         List<RecordDescriptor> recordDescriptors = serverFile.getRecords().toStream()
@@ -43,6 +47,15 @@ public class SnapshotBuilder {
 
         fileDescriptor.setRecordDescriptors(recordDescriptors);
 
-        return fileDescriptor;
+        final Map<String, RecordSnapshot> recordsMap = new HashMap<>();
+
+        for (RecordDescriptor recordDescriptor : recordDescriptors) {
+            RecordSnapshot rs = new RecordSnapshot(recordDescriptor.getLockedBy());
+            rs.getWaiting().addAll(recordDescriptor.getWaiting());
+
+            recordsMap.put(recordDescriptor.getId(), rs);
+        }
+
+        return recordsMap;
     }
 }

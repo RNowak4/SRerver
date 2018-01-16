@@ -3,8 +3,10 @@ package server.files;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.control.Try;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
@@ -12,9 +14,17 @@ import java.nio.file.Files;
 @Component
 class SystemFileManager {
     private static final char[] EMPTY_CHAR = new char[1024];
-    private static final File dir = new File("/home/radek/repo");
+
+    @Value("${folder}")
+    private String dirPath;
+
+    private File dir = new File("/home/radek/repo");
     private Map<String, File> systemFilesMap = HashMap.empty();
 
+    @PostConstruct
+    void init() {
+        dir = new File(dirPath);
+    }
 
     Try<Void> newFile(final String fileName) {
         return Try.of(() -> new File(dir, fileName))
@@ -36,7 +46,8 @@ class SystemFileManager {
                 .toTry()
                 .mapTry(file -> new RandomAccessFile(file, "rwd"))
                 .andThenTry(file -> {
-                    file.setLength(file.length() + 1024);
+                    file.seek(record.getPosition() * 1024);
+                    file.writeChars(String.valueOf(EMPTY_CHAR));
                     file.seek(record.getPosition() * 1024);
                     file.writeChars(String.valueOf(record.getData()));
                 })
@@ -48,6 +59,8 @@ class SystemFileManager {
                 .toTry()
                 .mapTry(file -> new RandomAccessFile(file, "rwd"))
                 .andThenTry(file -> {
+                    file.seek(record.getPosition() * 1024);
+                    file.writeChars(String.valueOf(EMPTY_CHAR));
                     file.seek(record.getPosition() * 1024);
                     file.writeChars(String.valueOf(content));
                 })

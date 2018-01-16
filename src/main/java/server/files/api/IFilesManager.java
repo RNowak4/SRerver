@@ -2,8 +2,11 @@ package server.files.api;
 
 import io.vavr.collection.List;
 import io.vavr.control.Try;
+import server.deadlock.GraphEdge;
 import server.files.Record;
 import server.files.ServerFile;
+
+import java.time.LocalDateTime;
 
 public interface IFilesManager {
 
@@ -28,4 +31,8 @@ public interface IFilesManager {
     void addOpenedBy(String userId, String file);
 
     void removeOpenedBy(String userId, String file);
+
+    void removeFromQueue(GraphEdge removed);
+
+    void removeFromQueue(String fileName, String recordId, String clientId, LocalDateTime localDateTime);
 }
