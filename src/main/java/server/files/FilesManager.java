@@ -66,7 +66,7 @@ class FilesManager implements HasLogger, IFilesManager {
     }
 
     @Override
-    public Try<Record> modifyRecord(String fileId, String recordId, String userId, String content) {
+    public Try<Record> modifyRecord(final String fileId, final String recordId, final String userId, final String content) {
         return filesMap.get(fileId)
                 .toTry()
                 .flatMap(serverFile -> serverFile.modifyRecord(recordId, userId, content)
@@ -112,18 +112,22 @@ class FilesManager implements HasLogger, IFilesManager {
     public void lockRecord(final String filename, final String recordId, final String userName) {
         filesMap.get(filename)
                 .peek(serverFile -> serverFile.lockRecord(userName, recordId))
-                .forEach(serverFile ->
+                .toTry()
+                .peek(serverFile ->
                         bootstrap.getServer().getRoomOperations(userName).sendEvent(RECORD_STATE_CHANGE,
-                                new LockAssignedMessage("LOCK_ASSIGNED", recordId, filename)));
+                                new LockAssignedMessage("LOCK_ASSIGNED", recordId, filename)))
+                .onSuccess(v -> getLogger().info("Successfully set lock to record: {} in file: {} by user: {}", recordId, filename, userName));
     }
 
     @Override
     public void unlockRecord(final String filename, final String recordId, final String userName) {
         filesMap.get(filename)
                 .peek(serverFile -> serverFile.unlockRecord(userName, recordId))
-                .forEach(serverFile ->
+                .toTry()
+                .peek(serverFile ->
                         bootstrap.getServer().getRoomOperations(userName).sendEvent(RECORD_STATE_CHANGE,
-                                new LockAssignedMessage("LOCK_PICKED_UP", recordId, filename)));
+                                new LockAssignedMessage("LOCK_PICKED_UP", recordId, filename)))
+                .onSuccess(v -> getLogger().info("Successfully unlocked record: {} from file: {} by user: {}", recordId, filename, userName));
     }
 
     @Override
