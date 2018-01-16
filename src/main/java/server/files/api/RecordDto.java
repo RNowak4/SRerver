@@ -3,10 +3,10 @@ package server.files.api;
 public class RecordDto {
     private String id;
     private String fileName;
-    private char[] content;
+    private String content;
     private String status;
 
-    public RecordDto(String id, String fileName, char[] content, String status) {
+    public RecordDto(String id, String fileName, String content, String status) {
         this.id = id;
         this.fileName = fileName;
         this.content = content;
@@ -29,11 +29,11 @@ public class RecordDto {
         this.fileName = fileName;
     }
 
-    public char[] getContent() {
+    public String getContent() {
         return content;
     }
 
-    public void setContent(char[] content) {
+    public void setContent(String content) {
         this.content = content;
     }
 

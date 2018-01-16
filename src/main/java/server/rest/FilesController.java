@@ -43,7 +43,7 @@ public class FilesController {
     @RequestMapping(method = RequestMethod.GET, path = "/{id}/records")
     public List<RecordDto> getAllRecords(@PathVariable("id") final String fileName) {
         return filesManager.getRecordsForFile(fileName).toStream()
-                .map(record -> new RecordDto(record.getId(), fileName, record.getData(), "status"))
+                .map(record -> new RecordDto(record.getId(), fileName, String.valueOf(record.getData()).replace("\0", ""), "status"))
                 .toJavaList();
     }
 

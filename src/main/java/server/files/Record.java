@@ -93,10 +93,6 @@ public class Record implements HasLogger {
         return position;
     }
 
-    public void setPosition(long position) {
-        this.position = position;
-    }
-
     void removeFromQueue(final WaitingClient waitingClient) {
         if (!lockingQueue.contains(waitingClient)) {
             getLogger().warn("Cannot remove waiting user: {} because is not in queue.", waitingClient.getId());

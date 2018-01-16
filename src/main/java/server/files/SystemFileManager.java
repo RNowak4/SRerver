@@ -18,12 +18,6 @@ import java.util.Arrays;
 class SystemFileManager implements HasLogger {
     private static final char[] EMPTY_CHAR = new char[1024];
 
-    static {
-        for (int i = 0; i < 1024; i++) {
-            EMPTY_CHAR[i] = '\0';
-        }
-    }
-
     @Value("${folder}")
     private String dirPath;
 
@@ -57,7 +51,7 @@ class SystemFileManager implements HasLogger {
     List<Record> getRecordsForFile(final String filename) {
         return systemFilesMap.get(filename)
                 .toTry()
-                .mapTry(file -> new RandomAccessFile(file, "rwd"))
+                .mapTry(file -> new RandomAccessFile(file, "rws"))
                 .flatMap(this::readRecords)
                 .getOrElse(List.empty());
     }
@@ -70,7 +64,12 @@ class SystemFileManager implements HasLogger {
                 final char[] data = new char[1024];
                 raf.seek(i * 1024);
                 for (int k = 0; k < 1024; k++) {
-                    data[k] = raf.readChar();
+                    int readed = raf.read();
+                    if (readed == 0) {
+                        break;
+                    } else {
+                        data[k] = (char) readed;
+                    }
                 }
                 record.setData(data);
 
@@ -104,13 +103,24 @@ class SystemFileManager implements HasLogger {
     Try<Void> addRecord(final ServerFile serverFile, final Record record) {
         return systemFilesMap.get(serverFile.getName())
                 .toTry()
-                .mapTry(file -> new RandomAccessFile(file, "rwd"))
+                .mapTry(file -> new RandomAccessFile(file, "rws"))
                 .andThenTry(file -> {
-                    file.setLength(file.length() + 1024);
+//                    file.setLength(file.length() + 1024);
                     file.seek(record.getPosition() * 1024);
-                    file.writeChars(String.valueOf(EMPTY_CHAR));
+
+                    for (char c : EMPTY_CHAR) {
+                        file.write(c);
+                    }
+
+//                    file.writeChars(String.valueOf(EMPTY_CHAR));
                     file.seek(record.getPosition() * 1024);
-                    file.writeChars(String.valueOf(record.getData()));
+
+                    file.writeBytes(String.valueOf(record.getData()));
+//                    for (char c : record.getData()) {
+//                        file.write(c);
+//                    }
+
+//                    file.writeChars(String.valueOf(record.getData()));
                     file.close();
                 })
                 .onFailure(th -> getLogger().error("Error while adding new record to file: {}", serverFile.getName(), th))
@@ -120,7 +130,7 @@ class SystemFileManager implements HasLogger {
     Try<Void> modifyRecord(final ServerFile serverFile, final Record record, final char[] content) {
         return systemFilesMap.get(serverFile.getName())
                 .toTry()
-                .mapTry(file -> new RandomAccessFile(file, "rwd"))
+                .mapTry(file -> new RandomAccessFile(file, "rws"))
                 .andThenTry(file -> {
                     file.seek(record.getPosition() * 1024);
                     file.writeChars(String.valueOf(EMPTY_CHAR));
@@ -135,10 +145,10 @@ class SystemFileManager implements HasLogger {
     Try<Void> removeRecord(final ServerFile serverFile, final Record record) {
         return systemFilesMap.get(serverFile.getName())
                 .toTry()
-                .mapTry(file -> new RandomAccessFile(file, "rwd"))
+                .mapTry(file -> new RandomAccessFile(file, "rws"))
                 .andThenTry(file -> {
                     file.seek(record.getPosition() * 1024);
-                    file.writeChars(String.valueOf(EMPTY_CHAR));
+                    file.writeBytes(String.valueOf(EMPTY_CHAR));
                     file.close();
                 })
                 .onFailure(th -> getLogger().error("Error while removing record: {} from file: {}", record.getId(), serverFile.getName(), th))

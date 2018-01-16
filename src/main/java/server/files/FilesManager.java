@@ -134,7 +134,8 @@ class FilesManager implements HasLogger, IFilesManager {
                 .peek(serverFile ->
                         bootstrap.getServer().getRoomOperations(userName).sendEvent(RECORD_STATE_CHANGE,
                                 new LockAssignedMessage("LOCK_ASSIGNED", recordId, filename)))
-                .onSuccess(v -> getLogger().info("Successfully set lock to record: {} in file: {} by user: {}", recordId, filename, userName));
+                .onSuccess(v -> getLogger().info("Successfully set lock to record: {} in file: {} by user: {}", recordId, filename, userName))
+                .onFailure(th -> getLogger().error("Error while trying to set lock to record: {} in file: {} by user: {}", recordId, filename, userName, th));
     }
 
     @Override
@@ -145,7 +146,8 @@ class FilesManager implements HasLogger, IFilesManager {
                 .peek(serverFile ->
                         bootstrap.getServer().getRoomOperations(userName).sendEvent(RECORD_STATE_CHANGE,
                                 new LockAssignedMessage("LOCK_PICKED_UP", recordId, filename)))
-                .onSuccess(v -> getLogger().info("Successfully unlocked record: {} from file: {} by user: {}", recordId, filename, userName));
+                .onSuccess(v -> getLogger().info("Successfully unlocked record: {} from file: {} by user: {}", recordId, filename, userName))
+                .onFailure(th -> getLogger().error("Error while trying to unset lock to record: {} in file: {} by user: {}", recordId, filename, userName, th));
     }
 
     @Override

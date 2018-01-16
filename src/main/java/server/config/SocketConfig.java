@@ -48,16 +48,20 @@ public class SocketConfig implements HasLogger {
 
         server.addEventListener("record_state_change", RecordChangeMessage.class, (client, data, ackSender) -> {
             if ("LOCK_RECORD".equals(data.getEventType())) {
+                getLogger().info("Received LOCK_RECORD message from client: {}", data.getUserId());
                 filesManager.lockRecord(data.getFile(), data.getRecord(), data.getUserId());
             } else {
+                getLogger().info("Received UNLOCK_RECORD message from client: {}", data.getUserId());
                 filesManager.unlockRecord(data.getFile(), data.getRecord(), data.getUserId());
             }
         });
 
         server.addEventListener("file_state_change", FileStateChangeMessage.class, (client, data, ackSender) -> {
             if ("OPEN_FILE".equals(data.getEventType())) {
+                getLogger().info("Received OPEN_FILE message from client: {}", data.getUserId());
                 filesManager.addOpenedBy(data.getUserId(), data.getFile());
             } else {
+                getLogger().info("Received CLOSE_FILE message from client: {}", data.getUserId());
                 filesManager.removeOpenedBy(data.getUserId(), data.getFile());
             }
             ackSender.sendAckData();
