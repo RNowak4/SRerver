@@ -69,6 +69,7 @@ public class SocketConfig implements HasLogger {
 
         server.addDisconnectListener(client -> {
             getLogger().info("Disconnected user: {}", clientsMap.get(client.getSessionId().toString()));
+            client.leaveRoom(clientsMap.get(client.getSessionId().toString()));
             clientsMap.remove(client.getSessionId().toString());
         });
 
