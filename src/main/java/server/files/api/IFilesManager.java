@@ -35,4 +35,6 @@ public interface IFilesManager {
     void removeFromQueue(GraphEdge removed);
 
     void removeFromQueue(String fileName, String recordId, String clientId, LocalDateTime localDateTime);
+
+    void removeUserFromSystem(String username);
 }

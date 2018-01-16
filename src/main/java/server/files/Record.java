@@ -1,9 +1,11 @@
 package server.files;
 
+import com.corundumstudio.socketio.SocketIOServer;
 import io.vavr.control.Option;
 import server.files.api.WaitingClient;
 import server.utils.HasLogger;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Queue;
@@ -54,6 +56,7 @@ public class Record implements HasLogger {
             if (lockingQueue.isEmpty()) {
                 lockedBy.set(Option.none());
             } else {
+                getLogger().info("Unlocking record: {} from user: {}", id, userId);
                 lockedBy.set(Option.of(lockingQueue.poll()));
             }
         }
@@ -63,6 +66,16 @@ public class Record implements HasLogger {
         return lockingQueue;
     }
 
+    void removeFromQueue(final String userName) {
+        java.util.List<WaitingClient> toRemove = new ArrayList<>();
+        lockingQueue.forEach(waitingClient -> {
+            if (waitingClient.getUserId().equals(userName)) {
+                toRemove.add(waitingClient);
+            }
+            lockingQueue.removeAll(toRemove);
+        });
+    }
+  
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

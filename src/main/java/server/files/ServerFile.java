@@ -99,18 +99,18 @@ public class ServerFile implements HasLogger {
         getLogger().info("Unlocked recordId: {} by user: {}", recordId, userId);
     }
 
-    Try<Record> modifyRecord(String recordId, String userId, String content) {
+    Try<Record> modifyRecord(final String recordId, final String userId, final String content) {
         return getRecord(recordId)
                 .filter(record -> isUserAllowedToEditRecord(record, userId))
                 .peek(record -> record.setData(content.toCharArray()))
                 .toTry();
     }
 
-    void addOpenedBy(String userId) {
+    void addOpenedBy(final String userId) {
         openedByUserIds = openedByUserIds.add(userId);
     }
 
-    void removeOpenedBy(String userId) {
+    void removeOpenedBy(final String userId) {
         openedByUserIds = openedByUserIds.remove(userId);
     }
 
