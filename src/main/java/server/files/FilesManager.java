@@ -149,6 +149,10 @@ class FilesManager implements HasLogger, IFilesManager {
     public void removeFromQueue(String fileName, String recordId, String clientId, LocalDateTime localDateTime) {
         filesMap.get(fileName)
                 .flatMap(serverFile -> serverFile.getRecord(recordId))
-                .forEach(record -> record.removeFromQueue(new WaitingClient(clientId, localDateTime)));
+                .forEach(record -> {
+                    record.removeFromQueue(new WaitingClient(clientId, localDateTime));
+                    bootstrap.getServer().getRoomOperations(clientId)
+                            .sendEvent("record_state_change", new LockAssignedMessage("LOCK_REJECTED", recordId, fileName));
+                });
     }
 }
