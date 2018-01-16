@@ -3,6 +3,7 @@ package server.files;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
+import io.vavr.collection.Set;
 import io.vavr.control.Try;
 import org.springframework.stereotype.Component;
 import server.clients.api.Message;
@@ -15,6 +16,7 @@ import server.files.api.IFilesManager;
 import server.files.api.WaitingClient;
 import server.utils.HasLogger;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 
 @Component
@@ -27,6 +29,22 @@ class FilesManager implements HasLogger, IFilesManager {
     FilesManager(final SystemFileManager systemFileManager, Bootstrap bootstrap) {
         this.systemFileManager = systemFileManager;
         this.bootstrap = bootstrap;
+    }
+
+    @PostConstruct
+    void init() {
+        systemFileManager.init();
+
+        final Set<String> files = systemFileManager.getSystemFilesMap().keySet();
+
+        files.toStream()
+                .map(filename -> {
+                    final List<Record> records = systemFileManager.getRecordsForFile(filename);
+                    final ServerFile serverFile = new ServerFile(filename);
+                    serverFile.setRecords(records);
+                    return serverFile;
+                })
+                .forEach(serverFile -> filesMap = filesMap.put(serverFile.getName(), serverFile));
     }
 
     @Override
