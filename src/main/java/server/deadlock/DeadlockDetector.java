@@ -5,6 +5,8 @@ import server.files.api.WaitingClient;
 import server.snapshot.RecordSnapshot;
 import server.utils.HasLogger;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +54,7 @@ public class DeadlockDetector implements HasLogger {
                     final String lockedBy = recordSnap.getLockedBy();
                     if (lockedBy != null) {
                         for (WaitingClient waiting : recordSnap.getWaiting()) {
-                            final GraphEdge e = new GraphEdge(waiting.getUserId(), waiting.getTimestamp(), lockedBy, file, record, snapshotDescription);
+                            final GraphEdge e = new GraphEdge(waiting.getUserId(), LocalDateTime.parse(waiting.getTimestamp(), DateTimeFormatter.ISO_DATE_TIME), lockedBy, file, record, snapshotDescription);
                             graph.addEdge(e);
                         }
                     }
