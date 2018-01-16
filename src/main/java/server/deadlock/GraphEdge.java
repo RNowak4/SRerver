@@ -5,46 +5,32 @@ import java.time.LocalDateTime;
 public class GraphEdge {
     private String lockingUser;
     private String waitingUser;
-    private LocalDateTime timestamp;
+    private LocalDateTime timestamp = LocalDateTime.now();
     private String filename;
     private String recordId;
     private String serverHost;
     private String serverPort;
 
-    public GraphEdge() {
-    }
-
-    public GraphEdge(String waiting, String lockedBy, String fileName, String recordId, SnapshotDescription snapshotDescription) {
-        this.waitingUser = waiting;
+    public GraphEdge(String userId, LocalDateTime timestamp, String lockedBy, String file, String record, SnapshotDescription snapshotDescription) {
+        this.waitingUser = userId;
         this.lockingUser = lockedBy;
-        this.filename = fileName;
-        this.recordId = recordId;
+        this.filename = file;
+        this.recordId = record;
         this.serverHost = snapshotDescription.getHost();
         this.serverPort = snapshotDescription.getPort();
+        this.timestamp = timestamp;
     }
 
-    public String getLockingUser() {
+    String getLockingUser() {
         return lockingUser;
-    }
-
-    public void setLockingUser(String lockingUser) {
-        this.lockingUser = lockingUser;
     }
 
     public String getWaitingUser() {
         return waitingUser;
     }
 
-    public void setWaitingUser(String waitingUser) {
-        this.waitingUser = waitingUser;
-    }
-
     public LocalDateTime getTimestamp() {
         return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
     }
 
     public String getFilename() {
@@ -59,24 +45,12 @@ public class GraphEdge {
         return recordId;
     }
 
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
-    }
-
-    public String getServerHost() {
+    String getServerHost() {
         return serverHost;
     }
 
-    public void setServerHost(String serverHost) {
-        this.serverHost = serverHost;
-    }
-
-    public String getServerPort() {
+    String getServerPort() {
         return serverPort;
-    }
-
-    public void setServerPort(String serverPort) {
-        this.serverPort = serverPort;
     }
 
     @Override

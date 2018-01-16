@@ -1,11 +1,13 @@
 package server.snapshot;
 
+import server.files.api.WaitingClient;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class RecordSnapshot {
     private String lockedBy;
-    private List<String> waiting = new ArrayList<>();
+    private List<WaitingClient> waiting = new ArrayList<>();
 
     public RecordSnapshot(String lockedBy) {
         this.lockedBy = lockedBy;
@@ -19,11 +21,11 @@ public class RecordSnapshot {
         this.lockedBy = lockedBy;
     }
 
-    public List<String> getWaiting() {
+    public List<WaitingClient> getWaiting() {
         return waiting;
     }
 
-    public void setWaiting(List<String> waiting) {
+    public void setWaiting(List<WaitingClient> waiting) {
         this.waiting = waiting;
     }
 }

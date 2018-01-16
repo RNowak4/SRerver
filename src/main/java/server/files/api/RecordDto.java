@@ -2,13 +2,13 @@ package server.files.api;
 
 public class RecordDto {
     private String id;
-    private String fileName;
-    private char[] content;
+    private String filename;
+    private String content;
     private String status;
 
-    public RecordDto(String id, String fileName, char[] content, String status) {
+    public RecordDto(String id, String filename, String content, String status) {
         this.id = id;
-        this.fileName = fileName;
+        this.filename = filename;
         this.content = content;
         this.status = status;
     }
@@ -21,19 +21,19 @@ public class RecordDto {
         this.id = id;
     }
 
-    public String getFileName() {
-        return fileName;
+    public String getFilename() {
+        return filename;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 
-    public char[] getContent() {
+    public String getContent() {
         return content;
     }
 
-    public void setContent(char[] content) {
+    public void setContent(String content) {
         this.content = content;
     }
 

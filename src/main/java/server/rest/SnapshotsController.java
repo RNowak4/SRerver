@@ -1,9 +1,6 @@
 package server.rest;
 
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import server.snapshot.RecordSnapshot;
 import server.snapshot.SnapshotBuilder;
 
@@ -17,7 +14,8 @@ public class SnapshotsController {
         this.snapshotBuilder = snapshotBuilder;
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/server/snapshot/{id}")
+    @CrossOrigin
+    @RequestMapping(method = RequestMethod.GET, path = "/snapshots/{id}")
     public Map<String, Map<String, RecordSnapshot>> makeSnapshot(@PathVariable("id") final String id) {
         return snapshotBuilder.makeSnapshot(id).getSnapshot();
     }

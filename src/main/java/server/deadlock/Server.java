@@ -4,16 +4,16 @@ public class Server {
     private String host;
     private String port;
 
-    public Server(String host, String port) {
+    Server(String host, String port) {
         this.host = host;
         this.port = port;
     }
 
-    public String getHost() {
+    String getHost() {
         return host;
     }
 
-    public String getPort() {
+    String getPort() {
         return port;
     }
 

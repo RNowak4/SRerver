@@ -20,6 +20,7 @@ public class FilesController {
         this.filesManager = filesManager;
     }
 
+    @CrossOrigin
     @RequestMapping(method = RequestMethod.GET)
     public List<String> getAllFiles() {
         return filesManager.getAllFiles().toStream()
@@ -27,6 +28,7 @@ public class FilesController {
                 .toJavaList();
     }
 
+    @CrossOrigin
     @RequestMapping(method = RequestMethod.POST)
     public SimpleMessage addNewFile(@RequestBody final FileCreateMessage msg) {
         final String name = msg.getFilename();
@@ -35,15 +37,17 @@ public class FilesController {
         return new SimpleMessage("Successfully created file: " + name);
     }
 
+    @CrossOrigin
     @RequestMapping(method = RequestMethod.DELETE, path = "/{id}")
     public void deleteFile(@PathVariable("id") final String fileId) {
         filesManager.delete(fileId);
     }
 
+    @CrossOrigin
     @RequestMapping(method = RequestMethod.GET, path = "/{id}/records")
     public List<RecordDto> getAllRecords(@PathVariable("id") final String fileName) {
         return filesManager.getRecordsForFile(fileName).toStream()
-                .map(record -> new RecordDto(record.getId(), fileName, record.getData(), "status"))
+                .map(record -> new RecordDto(record.getId(), fileName, String.valueOf(record.getData()).replaceAll("\0+", ""), "status"))
                 .toJavaList();
     }
 

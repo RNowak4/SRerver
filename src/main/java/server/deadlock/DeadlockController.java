@@ -1,16 +1,19 @@
 package server.deadlock;
 
+import io.vavr.control.Option;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import server.files.api.IFilesManager;
-import server.snapshot.Snapshot2;
+import server.snapshot.Snapshot;
 import server.snapshot.SnapshotBuilder;
+import server.utils.HasLogger;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Component
-public class DeadlockController {
+public class DeadlockController implements HasLogger {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ServerHolder serverHolder;
     private final IFilesManager filesManager;
@@ -24,23 +27,26 @@ public class DeadlockController {
         this.snapshotBuilder = snapshotBuilder;
     }
 
-//    @Scheduled
+    @Scheduled(fixedRate = 10000)
     public void checkDeadlocks() {
         final String snapUuid = UUID.randomUUID().toString();
+        getLogger().info("Starting checking for dead locks with snapshot id: {}", snapUuid);
         final DeadlockDetector detector = new DeadlockDetector(snapUuid);
-        final Snapshot2 ownSnapShot = snapshotBuilder.makeSnapshot(snapUuid);
+        final Snapshot ownSnapShot = snapshotBuilder.makeSnapshot(snapUuid);
         detector.addSnapshot(new SnapshotDescription(ownSnapShot, null, null));
         serverHolder.getServers().stream()
-                .map(server -> CompletableFuture.runAsync(() -> getSnapshotForServer(server, detector, snapUuid)))
+                .map(server -> CompletableFuture.runAsync(() -> getSnapshotForServer(server, detector, snapUuid))
+                        .thenAccept(v -> getLogger().info("Successfully get snapshot from server: {}:{}", server.getHost(), server.getPort())))
                 .forEach(CompletableFuture::join);
 
         detector.buildGraph();
-        GraphEdge removed = detector.getCycleAndRemove();
-        while (removed != null) {
-            if (removed.getServerHost() != null) {
-                removeWaitingClient(removed);
+
+        Option<GraphEdge> removed = detector.getCycleAndRemove();
+        while (removed.isDefined()) {
+            if (removed.get().getServerHost() != null) {
+                removeWaitingClient(removed.get());
             } else {
-                filesManager.removeFromQueue(removed);
+                filesManager.removeFromQueue(removed.get());
             }
             removed = detector.getCycleAndRemove();
         }
@@ -55,13 +61,17 @@ public class DeadlockController {
                 removed.getWaitingUser(),
                 removed.getTimestamp());
 
+        getLogger().info("Removing waiting client: {} on file: {} record: {}",
+                removed.getWaitingUser(), removed.getFilename(), removed.getRecordId());
         restTemplate.delete(url);
     }
 
-    public void getSnapshotForServer(Server server, DeadlockDetector detector, String id) {
+    private void getSnapshotForServer(final Server server, final DeadlockDetector detector, final String id) {
+        getLogger().info("Getting snapshot for server: {}:{}", server.getHost(), server.getPort());
+
         final String address = String.format("%s:%s", server.getHost(), server.getPort());
         final String url = String.format("http://%s/snapshots/%s", address, id);
-        Snapshot2 snap = restTemplate.getForObject(url, Snapshot2.class);
+        Snapshot snap = restTemplate.getForObject(url, Snapshot.class);
         detector.addSnapshot(new SnapshotDescription(snap, server.getHost(), server.getPort()));
     }
 

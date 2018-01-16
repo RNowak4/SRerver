@@ -2,6 +2,7 @@ package server.files;
 
 import io.vavr.control.Option;
 import server.files.api.WaitingClient;
+import server.utils.HasLogger;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -9,16 +10,15 @@ import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class Record {
+public class Record implements HasLogger {
     private static final int size = 1024;
-
     private char[] data = new char[size];
     private long position;
     private String id;
     private AtomicReference<Option<WaitingClient>> lockedBy = new AtomicReference<>(Option.none());
     private Queue<WaitingClient> lockingQueue = new LinkedBlockingQueue<>();
 
-    public Record(String id, long position) {
+    Record(String id, long position) {
         this.id = id;
         this.position = position;
     }
@@ -27,7 +27,7 @@ public class Record {
         return data;
     }
 
-    public void setData(char[] data) {
+    void setData(char[] data) {
         this.data = data;
     }
 
@@ -35,15 +35,11 @@ public class Record {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public AtomicReference<Option<WaitingClient>> getLockedBy() {
         return lockedBy;
     }
 
-    public boolean lock(Option<WaitingClient> user) {
+    boolean lock(Option<WaitingClient> user) {
         if (lockedBy.get().isEmpty()) {
             lockedBy.set(user);
             return true;
@@ -53,8 +49,8 @@ public class Record {
         }
     }
 
-    public void unlock(final String userId) {
-        if (lockedBy.get().isDefined() && lockedBy.get().get().getId().equals(userId)) {
+    void unlock(final String userId) {
+        if (lockedBy.get().isDefined() && lockedBy.get().get().getUserId().equals(userId)) {
             if (lockingQueue.isEmpty()) {
                 lockedBy.set(Option.none());
             } else {
@@ -65,10 +61,6 @@ public class Record {
 
     public Queue<WaitingClient> getLockingQueue() {
         return lockingQueue;
-    }
-
-    public void setLockingQueue(Queue<WaitingClient> lockingQueue) {
-        this.lockingQueue = lockingQueue;
     }
 
     @Override
@@ -97,15 +89,14 @@ public class Record {
                 '}';
     }
 
-    public long getPosition() {
+    long getPosition() {
         return position;
     }
 
-    public void setPosition(long position) {
-        this.position = position;
-    }
-
-    public void removeFromQueue(WaitingClient waitingClient) {
+    void removeFromQueue(final WaitingClient waitingClient) {
+        if (!lockingQueue.contains(waitingClient)) {
+            getLogger().warn("Cannot remove waiting user: {} because is not in queue.", waitingClient.getUserId());
+        }
         lockingQueue.remove(waitingClient);
     }
 }

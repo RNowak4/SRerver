@@ -1,12 +1,17 @@
 package server.deadlock;
 
+import io.vavr.control.Option;
+import server.files.api.WaitingClient;
 import server.snapshot.RecordSnapshot;
+import server.utils.HasLogger;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DeadlockDetector {
+public class DeadlockDetector implements HasLogger {
     private WaitingGraph graph;
     private List<SnapshotDescription> snapshots = new ArrayList<>();
     private String snapUuid;
@@ -16,26 +21,30 @@ public class DeadlockDetector {
         this.snapshots = snapshots;
     }
 
-    public DeadlockDetector(String snapUuid) {
+    DeadlockDetector(String snapUuid) {
         this.snapUuid = snapUuid;
     }
 
-    public void addSnapshot(final SnapshotDescription snapshot) {
+    void addSnapshot(final SnapshotDescription snapshot) {
         snapshots.add(snapshot);
     }
 
-    public GraphEdge getCycleAndRemove() {
+    Option<GraphEdge> getCycleAndRemove() {
         final List<GraphEdge> cyclePath = graph.findCycle();
 
         if (!cyclePath.isEmpty()) {
-            final GraphEdge younges = WaitingGraph.getYoungest(cyclePath);
-            return younges;
+            getLogger().info("Found cycle.");
+            final GraphEdge youngest = WaitingGraph.getYoungest(cyclePath);
+            graph.removeEdge(youngest);
+            return Option.of(youngest);
         }
 
-        return null;
+        getLogger().info("Cycle not found.");
+        return Option.none();
     }
 
-    public WaitingGraph buildGraph() {
+    WaitingGraph buildGraph() {
+        getLogger().info("Started building waiting graph");
         graph = new WaitingGraph();
         for (final SnapshotDescription snapshotDescription : snapshots) {
             final Map<String, Map<String, RecordSnapshot>> data = snapshotDescription.getSnapshot().getSnapshot();
@@ -48,8 +57,8 @@ public class DeadlockDetector {
                     final RecordSnapshot recordSnap = records.get(record);
                     final String lockedBy = recordSnap.getLockedBy();
                     if (lockedBy != null) {
-                        for (String waiting : recordSnap.getWaiting()) {
-                            final GraphEdge e = new GraphEdge(waiting, lockedBy, file, record, snapshotDescription);
+                        for (WaitingClient waiting : recordSnap.getWaiting()) {
+                            final GraphEdge e = new GraphEdge(waiting.getUserId(), LocalDateTime.parse(waiting.getTimestamp(), DateTimeFormatter.ISO_DATE_TIME), lockedBy, file, record, snapshotDescription);
                             graph.addEdge(e);
                         }
                     }
@@ -57,6 +66,7 @@ public class DeadlockDetector {
             }
         }
 
+        getLogger().info("Successfulyl built waiting graph");
         return graph;
     }
 }

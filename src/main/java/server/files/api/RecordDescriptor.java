@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public class RecordDescriptor {
     private String id;
-    private List<String> waiting;
+    private List<WaitingClient> waiting;
     private String lockedBy;
 
     public RecordDescriptor(String id) {
@@ -20,11 +20,11 @@ public class RecordDescriptor {
         this.id = id;
     }
 
-    public List<String> getWaiting() {
+    public List<WaitingClient> getWaiting() {
         return waiting;
     }
 
-    public void setWaiting(List<String> waiting) {
+    public void setWaiting(List<WaitingClient> waiting) {
         this.waiting = waiting;
     }
 
