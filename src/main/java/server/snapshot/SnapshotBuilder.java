@@ -22,16 +22,16 @@ public class SnapshotBuilder {
         this.filesManager = filesManager;
     }
 
-    public Snapshot makeSnapshot(final String id) {
-        final Snapshot snaphot2 = new Snapshot();
+    public Snapshot makeSnapshot(final String snapshotId) {
+        final Snapshot snaphot = new Snapshot();
 
         filesManager.getAllFiles().toStream()
                 .forEach(file -> {
                     final Map<String, RecordSnapshot> snap = fileSnapshot(file);
-                    snaphot2.getSnapshot().put(file.getName(), snap);
+                    snaphot.getSnapshot().put(file.getName(), snap);
                 });
 
-        return snaphot2;
+        return snaphot;
     }
 
     private Map<String, RecordSnapshot> fileSnapshot(final ServerFile serverFile) {

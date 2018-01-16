@@ -1,11 +1,12 @@
 package server.files.api;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public class WaitingClient {
     private String userId;
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
 
     public WaitingClient(String id) {
         this.userId = id;
@@ -13,14 +14,14 @@ public class WaitingClient {
 
     public WaitingClient(String id, LocalDateTime timestamp) {
         this.userId = id;
-        this.timestamp = timestamp;
+        this.timestamp = timestamp.format(DateTimeFormatter.ISO_DATE_TIME);
     }
 
     public String getUserId() {
         return userId;
     }
 
-    public LocalDateTime getTimestamp() {
+    public String getTimestamp() {
         return timestamp;
     }
 
