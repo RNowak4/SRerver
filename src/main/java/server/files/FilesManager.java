@@ -145,11 +145,17 @@ class FilesManager implements HasLogger, IFilesManager {
     @Override
     public void unlockRecord(final String filename, final String recordId, final String userName) {
         filesMap.get(filename)
-                .peek(serverFile -> serverFile.unlockRecord(userName, recordId))
                 .toTry()
                 .peek(serverFile ->
-                        bootstrap.getServer().getRoomOperations(userName).sendEvent(RECORD_STATE_CHANGE,
-                                new LockAssignedMessage("LOCK_PICKED_UP", recordId, filename)))
+                        serverFile.getRecord(recordId)
+                                .toTry()
+                                .peek(record -> record.getLockingQueue().forEach(waitingClient -> {
+                                    bootstrap.getServer().getRoomOperations(waitingClient.getUserId()).sendEvent(RECORD_STATE_CHANGE,
+                                            new LockAssignedMessage("LOCK_PICKED_UP", recordId, filename));
+                                }))
+                                .andThen(() -> bootstrap.getServer().getRoomOperations(userName).sendEvent(RECORD_STATE_CHANGE,
+                                        new LockAssignedMessage("LOCK_PICKED_UP", recordId, filename))))
+                .peek(serverFile -> serverFile.unlockRecord(userName, recordId))
                 .onSuccess(v -> getLogger().info("Successfully unlocked record: {} from file: {} by user: {}", recordId, filename, userName))
                 .onFailure(th -> getLogger().error("Error while trying to unset lock to record: {} in file: {} by user: {}", recordId, filename, userName, th));
     }

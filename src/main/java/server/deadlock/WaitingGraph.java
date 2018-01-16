@@ -2,7 +2,7 @@ package server.deadlock;
 
 import java.util.*;
 
-public class WaitingGraph {
+class WaitingGraph {
     private Map<String, Map<String, List<GraphEdge>>> graph = new HashMap<>();
 
     void addEdge(final GraphEdge e) {
@@ -24,7 +24,7 @@ public class WaitingGraph {
         }
     }
 
-    public void removeEdge(final GraphEdge e) {
+    void removeEdge(final GraphEdge e) {
         final String wUser = e.getWaitingUser();
         final String lUser = e.getLockingUser();
         graph.get(wUser).get(lUser).remove(e);
