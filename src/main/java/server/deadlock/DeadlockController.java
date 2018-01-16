@@ -11,17 +11,15 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 public class DeadlockController {
+    private final RestTemplate restTemplate = new RestTemplate();
     private final ServerHolder serverHolder;
-    private final RestTemplate restTemplate;
     private final IFilesManager filesManager;
     private final SnapshotBuilder snapshotBuilder;
 
     public DeadlockController(final ServerHolder serverHolder,
-                              final RestTemplate restTemplate,
                               final IFilesManager filesManager,
                               final SnapshotBuilder snapshotBuilder) {
         this.serverHolder = serverHolder;
-        this.restTemplate = restTemplate;
         this.filesManager = filesManager;
         this.snapshotBuilder = snapshotBuilder;
     }
