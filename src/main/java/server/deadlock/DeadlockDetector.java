@@ -33,14 +33,18 @@ public class DeadlockDetector implements HasLogger {
         final List<GraphEdge> cyclePath = graph.findCycle();
 
         if (!cyclePath.isEmpty()) {
+            getLogger().info("Found cycle.");
             final GraphEdge youngest = WaitingGraph.getYoungest(cyclePath);
+            graph.removeEdge(youngest);
             return Option.of(youngest);
         }
 
+        getLogger().info("Cycle not found.");
         return Option.none();
     }
 
     WaitingGraph buildGraph() {
+        getLogger().info("Started building waiting graph");
         graph = new WaitingGraph();
         for (final SnapshotDescription snapshotDescription : snapshots) {
             final Map<String, Map<String, RecordSnapshot>> data = snapshotDescription.getSnapshot().getSnapshot();
@@ -62,6 +66,7 @@ public class DeadlockDetector implements HasLogger {
             }
         }
 
+        getLogger().info("Successfulyl built waiting graph");
         return graph;
     }
 }
