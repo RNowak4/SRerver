@@ -4,6 +4,7 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Set;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.springframework.stereotype.Component;
 import server.clients.api.Message;
@@ -184,5 +185,19 @@ class FilesManager implements HasLogger, IFilesManager {
                     bootstrap.getServer().getRoomOperations(clientId)
                             .sendEvent(RECORD_STATE_CHANGE, new LockAssignedMessage("LOCK_REJECTED", recordId, fileName));
                 });
+    }
+
+    @Override
+    public void removeUserFromSystem(final String userName) {
+        filesMap.values()
+                .peek(serverFile ->
+                        getRecordsForFile(serverFile.getName()).forEach(record -> {
+                            final Option<WaitingClient> lockedBy = record.getLockedBy().get();
+                            record.removeFromQueue(userName);
+                            if (lockedBy.isDefined() && lockedBy.get().getUserId().equals(userName)) {
+                                unlockRecord(serverFile.getName(), record.getId(), userName);
+                            }
+                        }))
+                .forEach(serverFile -> removeOpenedBy(userName, serverFile.getName()));
     }
 }

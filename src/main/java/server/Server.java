@@ -5,7 +5,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EnableScheduling
+//@EnableScheduling
+// TODO zapis do pliku po unlock
+// TODO zwolnienie pamieci jak plik nie czytany przez nikogo
 public class Server {
 
     public static void main(final String[] args){

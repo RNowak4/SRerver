@@ -1,6 +1,8 @@
 package server.config;
 
 import com.corundumstudio.socketio.SocketIOServer;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,15 +15,13 @@ import server.clients.api.messages.RecordChangeMessage;
 import server.files.api.IFilesManager;
 import server.utils.HasLogger;
 
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 public class SocketConfig implements HasLogger {
     @Value("${socket.port}")
     private String socketPort;
     private final IFilesManager filesManager;
-    private Map<String, String> clientsMap = new HashMap<>();
+    private Map<String, String> clientsMap = HashMap.empty();
 
     public SocketConfig(IFilesManager filesManager) {
         this.filesManager = filesManager;
@@ -40,8 +40,11 @@ public class SocketConfig implements HasLogger {
 
         server.addEventListener("authorize", AuthorizeMessage.class, (client, data, ackSender) -> {
             getLogger().info("Authorizing client: {}.", data.getUserId());
+            if (clientsMap.containsValue(data.getUserId())) {
+                throw new RuntimeException("User already exists!");
+            }
             client.joinRoom(data.getUserId());
-            clientsMap.put(client.getSessionId().toString(), data.getUserId());
+            clientsMap = clientsMap.put(client.getSessionId().toString(), data.getUserId());
             getLogger().info("Client: {} joined private room.", data.getUserId());
         });
 
@@ -68,9 +71,14 @@ public class SocketConfig implements HasLogger {
         });
 
         server.addDisconnectListener(client -> {
-            getLogger().info("Disconnected user: {}", clientsMap.get(client.getSessionId().toString()));
-            client.leaveRoom(clientsMap.get(client.getSessionId().toString()));
-            clientsMap.remove(client.getSessionId().toString());
+            clientsMap.get(client.getSessionId().toString())
+                    .onEmpty(() -> getLogger().warn("User: {} doesn't exist in system!", client.getSessionId().toString()))
+                    .forEach(userName -> {
+                        getLogger().info("Disconnected user: {}", userName);
+                        filesManager.removeUserFromSystem(userName);
+                        client.leaveRoom(userName);
+                        clientsMap = clientsMap.remove(userName);
+                    });
         });
 
         return server;
