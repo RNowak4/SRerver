@@ -105,22 +105,10 @@ class SystemFileManager implements HasLogger {
                 .toTry()
                 .mapTry(file -> new RandomAccessFile(file, "rws"))
                 .andThenTry(file -> {
-//                    file.setLength(file.length() + 1024);
                     file.seek(record.getPosition() * 1024);
-
-                    for (char c : EMPTY_CHAR) {
-                        file.write(c);
-                    }
-
-//                    file.writeChars(String.valueOf(EMPTY_CHAR));
+                    file.writeBytes(String.valueOf(EMPTY_CHAR));
                     file.seek(record.getPosition() * 1024);
-
                     file.writeBytes(String.valueOf(record.getData()));
-//                    for (char c : record.getData()) {
-//                        file.write(c);
-//                    }
-
-//                    file.writeChars(String.valueOf(record.getData()));
                     file.close();
                 })
                 .onFailure(th -> getLogger().error("Error while adding new record to file: {}", serverFile.getName(), th))
@@ -133,9 +121,9 @@ class SystemFileManager implements HasLogger {
                 .mapTry(file -> new RandomAccessFile(file, "rws"))
                 .andThenTry(file -> {
                     file.seek(record.getPosition() * 1024);
-                    file.writeChars(String.valueOf(EMPTY_CHAR));
+                    file.writeBytes(String.valueOf(EMPTY_CHAR));
                     file.seek(record.getPosition() * 1024);
-                    file.writeChars(String.valueOf(content));
+                    file.writeBytes(String.valueOf(content));
                     file.close();
                 })
                 .onFailure(th -> getLogger().error("Error while modifying record: {} in file: {}", record.getId(), serverFile.getName(), th))
