@@ -1,6 +1,7 @@
 package server.deadlock;
 
 import io.vavr.control.Option;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import server.files.api.IFilesManager;
@@ -25,7 +26,7 @@ public class DeadlockController {
         this.snapshotBuilder = snapshotBuilder;
     }
 
-    //    @Scheduled
+    @Scheduled(fixedRate = 10000)
     public void checkDeadlocks() {
         final String snapUuid = UUID.randomUUID().toString();
         final DeadlockDetector detector = new DeadlockDetector(snapUuid);
