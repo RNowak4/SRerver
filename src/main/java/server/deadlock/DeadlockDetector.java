@@ -1,6 +1,7 @@
 package server.deadlock;
 
 import io.vavr.control.Option;
+import server.files.api.WaitingClient;
 import server.snapshot.RecordSnapshot;
 import server.utils.HasLogger;
 
@@ -50,8 +51,8 @@ public class DeadlockDetector implements HasLogger {
                     final RecordSnapshot recordSnap = records.get(record);
                     final String lockedBy = recordSnap.getLockedBy();
                     if (lockedBy != null) {
-                        for (String waiting : recordSnap.getWaiting()) {
-                            final GraphEdge e = new GraphEdge(waiting, lockedBy, file, record, snapshotDescription);
+                        for (WaitingClient waiting : recordSnap.getWaiting()) {
+                            final GraphEdge e = new GraphEdge(waiting.getUserId(), waiting.getTimestamp(), lockedBy, file, record, snapshotDescription);
                             graph.addEdge(e);
                         }
                     }

@@ -9,6 +9,7 @@ import server.files.api.IFilesManager;
 import server.files.api.RecordDescriptor;
 import server.files.api.WaitingClient;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,11 +42,9 @@ public class SnapshotBuilder {
                     final WaitingClient lockedBy = record.getLockedBy().get().getOrNull();
                     final RecordDescriptor recordDescriptor = new RecordDescriptor(record.getId());
                     recordDescriptor.setLockedBy(Option.of(lockedBy)
-                            .map(WaitingClient::getId)
+                            .map(WaitingClient::getUserId)
                             .getOrNull());
-                    recordDescriptor.setWaiting(record.getLockingQueue().stream()
-                            .map(WaitingClient::getId)
-                            .collect(Collectors.toList())
+                    recordDescriptor.setWaiting(new ArrayList<>(record.getLockingQueue())
                     );
 
                     return recordDescriptor;

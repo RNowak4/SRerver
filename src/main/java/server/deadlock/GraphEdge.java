@@ -11,14 +11,14 @@ public class GraphEdge {
     private String serverHost;
     private String serverPort;
 
-    GraphEdge(final String waiting, final String lockedBy, final String fileName,
-              final String recordId, final SnapshotDescription snapshotDescription) {
-        this.waitingUser = waiting;
+    public GraphEdge(String userId, LocalDateTime timestamp, String lockedBy, String file, String record, SnapshotDescription snapshotDescription) {
+        this.waitingUser = userId;
         this.lockingUser = lockedBy;
-        this.filename = fileName;
-        this.recordId = recordId;
+        this.filename = file;
+        this.recordId = record;
         this.serverHost = snapshotDescription.getHost();
         this.serverPort = snapshotDescription.getPort();
+        this.timestamp = timestamp;
     }
 
     String getLockingUser() {

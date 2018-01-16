@@ -50,7 +50,7 @@ public class Record implements HasLogger {
     }
 
     void unlock(final String userId) {
-        if (lockedBy.get().isDefined() && lockedBy.get().get().getId().equals(userId)) {
+        if (lockedBy.get().isDefined() && lockedBy.get().get().getUserId().equals(userId)) {
             if (lockingQueue.isEmpty()) {
                 lockedBy.set(Option.none());
             } else {
@@ -95,7 +95,7 @@ public class Record implements HasLogger {
 
     void removeFromQueue(final WaitingClient waitingClient) {
         if (!lockingQueue.contains(waitingClient)) {
-            getLogger().warn("Cannot remove waiting user: {} because is not in queue.", waitingClient.getId());
+            getLogger().warn("Cannot remove waiting user: {} because is not in queue.", waitingClient.getUserId());
         }
         lockingQueue.remove(waitingClient);
     }

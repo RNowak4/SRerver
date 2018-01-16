@@ -81,7 +81,7 @@ public class ServerFile implements HasLogger {
 
     private boolean isUserAllowedToEditRecord(final Record record, final String userId) {
         return record.getLockedBy().get()
-                .map(WaitingClient::getId)
+                .map(WaitingClient::getUserId)
                 .map(id -> Objects.equals(id, userId))
                 .getOrElse(false);
     }
