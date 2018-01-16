@@ -1,6 +1,5 @@
 package server.files;
 
-import com.corundumstudio.socketio.SocketIOServer;
 import io.vavr.control.Option;
 import server.files.api.WaitingClient;
 import server.utils.HasLogger;
@@ -75,7 +74,7 @@ public class Record implements HasLogger {
             lockingQueue.removeAll(toRemove);
         });
     }
-  
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

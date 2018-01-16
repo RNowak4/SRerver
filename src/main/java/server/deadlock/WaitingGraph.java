@@ -75,7 +75,7 @@ public class WaitingGraph {
 
         for (int i = 0; i < circleSize; i++) {
             final String u1 = circle.get(i);
-            final String u2 = circle.get((i+1)%circleSize);
+            final String u2 = circle.get((i + 1) % circleSize);
             final List<GraphEdge> edges = graph.get(u1).get(u2);
             final GraphEdge e = getYoungest(edges);
 

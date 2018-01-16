@@ -6,11 +6,11 @@ public class FileDescriptor {
     private String fileName;
     private List<RecordDescriptor> recordDescriptors;
 
-    public FileDescriptor( String fileName) {
+    public FileDescriptor(String fileName) {
         this.fileName = fileName;
     }
 
-    public FileDescriptor( String fileName, List<RecordDescriptor> recordDescriptors) {
+    public FileDescriptor(String fileName, List<RecordDescriptor> recordDescriptors) {
         this.fileName = fileName;
         this.recordDescriptors = recordDescriptors;
     }

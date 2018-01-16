@@ -12,7 +12,6 @@ import server.files.api.WaitingClient;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 public class SnapshotBuilder {
