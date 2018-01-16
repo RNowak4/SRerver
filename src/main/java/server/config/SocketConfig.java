@@ -15,7 +15,6 @@ import server.clients.api.messages.RecordChangeMessage;
 import server.files.api.IFilesManager;
 import server.utils.HasLogger;
 
-
 @Configuration
 public class SocketConfig implements HasLogger {
     @Value("${socket.port}")

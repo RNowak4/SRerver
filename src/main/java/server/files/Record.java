@@ -75,7 +75,7 @@ public class Record implements HasLogger {
             lockingQueue.removeAll(toRemove);
         });
     }
-
+  
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
