@@ -129,11 +129,14 @@ class FilesManager implements HasLogger, IFilesManager {
     @Override
     public void lockRecord(final String filename, final String recordId, final String userName) {
         filesMap.get(filename)
-                .peek(serverFile -> serverFile.lockRecord(userName, recordId))
+                .map(serverFile -> serverFile.lockRecord(userName, recordId))
                 .toTry()
-                .peek(serverFile ->
+                .peek(isLocked -> {
+                    if (isLocked) {
                         bootstrap.getServer().getRoomOperations(userName).sendEvent(RECORD_STATE_CHANGE,
-                                new LockAssignedMessage("LOCK_ASSIGNED", recordId, filename)))
+                                new LockAssignedMessage("LOCK_ASSIGNED", recordId, filename));
+                    }
+                })
                 .onSuccess(v -> getLogger().info("Successfully set lock to record: {} in file: {} by user: {}", recordId, filename, userName))
                 .onFailure(th -> getLogger().error("Error while trying to set lock to record: {} in file: {} by user: {}", recordId, filename, userName, th));
     }

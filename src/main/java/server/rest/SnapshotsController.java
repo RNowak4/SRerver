@@ -15,7 +15,7 @@ public class SnapshotsController {
     }
 
     @CrossOrigin
-    @RequestMapping(method = RequestMethod.GET, path = "/server/snapshot/{id}")
+    @RequestMapping(method = RequestMethod.GET, path = "/snapshots/{id}")
     public Map<String, Map<String, RecordSnapshot>> makeSnapshot(@PathVariable("id") final String id) {
         return snapshotBuilder.makeSnapshot(id).getSnapshot();
     }

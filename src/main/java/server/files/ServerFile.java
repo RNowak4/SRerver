@@ -86,10 +86,11 @@ public class ServerFile implements HasLogger {
                 .getOrElse(false);
     }
 
-    void lockRecord(final String userId, final String recordId) {
+    boolean lockRecord(final String userId, final String recordId) {
         getLogger().info("Locking recordId: {} by user: {}", recordId, userId);
-        getRecord(recordId)
-                .forEach(record -> record.lock(Option.of(new WaitingClient(userId))));
+        return getRecord(recordId)
+                .map(record -> record.lock(Option.of(new WaitingClient(userId))))
+                .get();
     }
 
     void unlockRecord(final String userId, final String recordId) {

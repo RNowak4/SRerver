@@ -2,12 +2,13 @@ package server.deadlock;
 
 import io.vavr.control.Option;
 import server.snapshot.RecordSnapshot;
+import server.utils.HasLogger;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DeadlockDetector {
+public class DeadlockDetector implements HasLogger {
     private WaitingGraph graph;
     private List<SnapshotDescription> snapshots = new ArrayList<>();
     private String snapUuid;
@@ -25,7 +26,7 @@ public class DeadlockDetector {
         snapshots.add(snapshot);
     }
 
-    Option<GraphEdge > getCycleAndRemove() {
+    Option<GraphEdge> getCycleAndRemove() {
         final List<GraphEdge> cyclePath = graph.findCycle();
 
         if (!cyclePath.isEmpty()) {
