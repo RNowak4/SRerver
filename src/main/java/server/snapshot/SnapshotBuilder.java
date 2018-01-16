@@ -17,8 +17,8 @@ public class SnapshotBuilder {
         this.filesManager = filesManager;
     }
 
-    public Snapshot2 makeSnapshot(final String id) {
-        final Snapshot2 snaphot2 = new Snapshot2();
+    public Snapshot makeSnapshot(final String id) {
+        final Snapshot snaphot2 = new Snapshot();
 
         filesManager.getAllFiles().toStream()
                 .forEach(file -> {

@@ -1,9 +1,10 @@
 package server.deadlock;
 
+import io.vavr.control.Option;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import server.files.api.IFilesManager;
-import server.snapshot.Snapshot2;
+import server.snapshot.Snapshot;
 import server.snapshot.SnapshotBuilder;
 
 import java.util.UUID;
@@ -24,23 +25,24 @@ public class DeadlockController {
         this.snapshotBuilder = snapshotBuilder;
     }
 
-//    @Scheduled
+    //    @Scheduled
     public void checkDeadlocks() {
         final String snapUuid = UUID.randomUUID().toString();
         final DeadlockDetector detector = new DeadlockDetector(snapUuid);
-        final Snapshot2 ownSnapShot = snapshotBuilder.makeSnapshot(snapUuid);
+        final Snapshot ownSnapShot = snapshotBuilder.makeSnapshot(snapUuid);
         detector.addSnapshot(new SnapshotDescription(ownSnapShot, null, null));
         serverHolder.getServers().stream()
                 .map(server -> CompletableFuture.runAsync(() -> getSnapshotForServer(server, detector, snapUuid)))
                 .forEach(CompletableFuture::join);
 
         detector.buildGraph();
-        GraphEdge removed = detector.getCycleAndRemove();
-        while (removed != null) {
-            if (removed.getServerHost() != null) {
-                removeWaitingClient(removed);
+
+        Option<GraphEdge> removed = detector.getCycleAndRemove();
+        while (removed.isDefined()) {
+            if (removed.get().getServerHost() != null) {
+                removeWaitingClient(removed.get());
             } else {
-                filesManager.removeFromQueue(removed);
+                filesManager.removeFromQueue(removed.get());
             }
             removed = detector.getCycleAndRemove();
         }
@@ -58,10 +60,10 @@ public class DeadlockController {
         restTemplate.delete(url);
     }
 
-    public void getSnapshotForServer(Server server, DeadlockDetector detector, String id) {
+    private void getSnapshotForServer(Server server, DeadlockDetector detector, String id) {
         final String address = String.format("%s:%s", server.getHost(), server.getPort());
         final String url = String.format("http://%s/snapshots/%s", address, id);
-        Snapshot2 snap = restTemplate.getForObject(url, Snapshot2.class);
+        Snapshot snap = restTemplate.getForObject(url, Snapshot.class);
         detector.addSnapshot(new SnapshotDescription(snap, server.getHost(), server.getPort()));
     }
 

@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Component
-public class ServerHolder {
+class ServerHolder {
     private Set<Server> servers = new HashSet<>();
 
     @PostConstruct
@@ -25,7 +25,7 @@ public class ServerHolder {
                 });
     }
 
-    public Set<Server> getServers() {
+    Set<Server> getServers() {
         return servers;
     }
 }

@@ -1,5 +1,6 @@
 package server.deadlock;
 
+import io.vavr.control.Option;
 import server.snapshot.RecordSnapshot;
 
 import java.util.ArrayList;
@@ -16,26 +17,26 @@ public class DeadlockDetector {
         this.snapshots = snapshots;
     }
 
-    public DeadlockDetector(String snapUuid) {
+    DeadlockDetector(String snapUuid) {
         this.snapUuid = snapUuid;
     }
 
-    public void addSnapshot(final SnapshotDescription snapshot) {
+    void addSnapshot(final SnapshotDescription snapshot) {
         snapshots.add(snapshot);
     }
 
-    public GraphEdge getCycleAndRemove() {
+    Option<GraphEdge > getCycleAndRemove() {
         final List<GraphEdge> cyclePath = graph.findCycle();
 
         if (!cyclePath.isEmpty()) {
-            final GraphEdge younges = WaitingGraph.getYoungest(cyclePath);
-            return younges;
+            final GraphEdge youngest = WaitingGraph.getYoungest(cyclePath);
+            return Option.of(youngest);
         }
 
-        return null;
+        return Option.none();
     }
 
-    public WaitingGraph buildGraph() {
+    WaitingGraph buildGraph() {
         graph = new WaitingGraph();
         for (final SnapshotDescription snapshotDescription : snapshots) {
             final Map<String, Map<String, RecordSnapshot>> data = snapshotDescription.getSnapshot().getSnapshot();

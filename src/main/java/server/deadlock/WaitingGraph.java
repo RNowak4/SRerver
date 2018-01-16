@@ -5,7 +5,7 @@ import java.util.*;
 public class WaitingGraph {
     private Map<String, Map<String, List<GraphEdge>>> graph = new HashMap<>();
 
-    public void addEdge(final GraphEdge e) {
+    void addEdge(final GraphEdge e) {
         if (graph.containsKey(e.getWaitingUser())) {
             final Map<String, List<GraphEdge>> map = graph.get(e.getWaitingUser());
             if (map.containsKey(e.getLockingUser())) {
@@ -37,7 +37,7 @@ public class WaitingGraph {
         }
     }
 
-    public List<GraphEdge> findCycle() {
+    List<GraphEdge> findCycle() {
         if (graph.keySet().size() < 2) {
             return new ArrayList<>();
         }
@@ -86,44 +86,10 @@ public class WaitingGraph {
         return result;
     }
 
-    public static GraphEdge getYoungest(final List<GraphEdge> edges) {
+    static GraphEdge getYoungest(final List<GraphEdge> edges) {
         return edges.stream()
                 .sorted(Comparator.comparing(GraphEdge::getTimestamp))
                 .findFirst()
                 .get();
-    }
-
-    private static class Path {
-        private List<GraphEdge> path = new ArrayList<>();
-
-        Path() {
-        }
-
-        public Path(List<GraphEdge> path) {
-            this.path = path;
-        }
-
-        void addToPath(final GraphEdge graphEdge) {
-            path.add(graphEdge);
-        }
-
-        public List<GraphEdge> getPath() {
-            return path;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            Path path1 = (Path) o;
-
-            return path != null ? path.equals(path1.path) : path1.path == null;
-        }
-
-        @Override
-        public int hashCode() {
-            return path != null ? path.hashCode() : 0;
-        }
     }
 }

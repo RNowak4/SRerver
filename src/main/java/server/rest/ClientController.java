@@ -22,6 +22,7 @@ public class ClientController {
         clientManager.removeClient(new Sid(sid));
     }
 
+    @CrossOrigin
     @RequestMapping(method = RequestMethod.DELETE, path = "/files/{fileName}/records/{recordId}/clients")
     public void removeFromQueue(@PathVariable("fileName") final String fileName,
                                 @PathVariable("recordId") final String recordId,

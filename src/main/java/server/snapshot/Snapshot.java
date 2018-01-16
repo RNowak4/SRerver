@@ -1,26 +1,17 @@
 package server.snapshot;
 
-import io.vavr.collection.List;
-import server.files.api.FileDescriptor;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Snapshot {
-    private String id;
-    private List<FileDescriptor> files = List.empty();
+    private Map<String, Map<String, RecordSnapshot>> snapshot = new HashMap<>();
 
-    public Snapshot(String id) {
-        this.id = id;
+    Snapshot() {
     }
 
-    public Snapshot(final String id, final List<FileDescriptor> files) {
-        this.id = id;
-        this.files = files;
+    public Map<String, Map<String, RecordSnapshot>> getSnapshot() {
+        return snapshot;
     }
 
-    public List<FileDescriptor> getFiles() {
-        return files;
-    }
 
-    public void addFileDescriptor(FileDescriptor fileDescriptor) {
-        files = files.append(fileDescriptor);
-    }
 }
