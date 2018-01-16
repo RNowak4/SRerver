@@ -1,25 +1,16 @@
 package server.rest;
 
 import org.springframework.web.bind.annotation.*;
-import server.clients.api.IClientManager;
-import server.clients.api.Sid;
 import server.files.api.IFilesManager;
 
 import java.time.LocalDateTime;
 
 @RestController
 public class ClientController {
-    private IClientManager clientManager;
     private IFilesManager filesManager;
 
-    @RequestMapping(method = RequestMethod.POST, path = "/server/clients")
-    public void registerClient(final Sid sid) {
-        clientManager.registerClient(sid);
-    }
-
-    @RequestMapping(method = RequestMethod.DELETE, path = "/server/clients/{sid}")
-    public void removeClient(@PathVariable("sid") final String sid) {
-        clientManager.removeClient(new Sid(sid));
+    public ClientController(IFilesManager filesManager) {
+        this.filesManager = filesManager;
     }
 
     @CrossOrigin
