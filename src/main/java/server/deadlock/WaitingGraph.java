@@ -88,7 +88,7 @@ public class WaitingGraph {
 
     static GraphEdge getYoungest(final List<GraphEdge> edges) {
         return edges.stream()
-                .sorted(Comparator.comparing(GraphEdge::getTimestamp))
+                .sorted(Comparator.comparing(GraphEdge::getTimestamp).reversed())
                 .findFirst()
                 .get();
     }
