@@ -9,10 +9,15 @@ import java.util.Map;
 public class DeadlockDetector {
     private WaitingGraph graph;
     private List<SnapshotDescription> snapshots = new ArrayList<>();
+    private String snapUuid;
 
     public DeadlockDetector(final WaitingGraph graph, final List<SnapshotDescription> snapshots) {
         this.graph = graph;
         this.snapshots = snapshots;
+    }
+
+    public DeadlockDetector(String snapUuid) {
+        this.snapUuid = snapUuid;
     }
 
     public void addSnapshot(final SnapshotDescription snapshot) {

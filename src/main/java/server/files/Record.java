@@ -104,4 +104,8 @@ public class Record {
     public void setPosition(long position) {
         this.position = position;
     }
+
+    public void removeFromQueue(WaitingClient waitingClient) {
+        lockingQueue.remove(waitingClient);
+    }
 }

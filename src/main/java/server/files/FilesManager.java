@@ -10,8 +10,12 @@ import server.clients.api.messages.LockAssignedMessage;
 import server.clients.api.messages.RecordRemovedMessage;
 import server.clients.api.messages.RecordUpdateMessage;
 import server.config.Bootstrap;
+import server.deadlock.GraphEdge;
 import server.files.api.IFilesManager;
+import server.files.api.WaitingClient;
 import server.utils.HasLogger;
+
+import java.time.LocalDateTime;
 
 @Component
 class FilesManager implements HasLogger, IFilesManager {
@@ -132,5 +136,19 @@ class FilesManager implements HasLogger, IFilesManager {
     public void removeOpenedBy(String userId, String file) {
         filesMap.get(file)
                 .forEach(serverFile -> serverFile.removeOpenedBy(userId));
+    }
+
+    @Override
+    public void removeFromQueue(GraphEdge removed) {
+        filesMap.get(removed.getFilename())
+                .flatMap(serverFile -> serverFile.getRecord(removed.getRecordId()))
+                .forEach(record -> record.removeFromQueue(new WaitingClient(removed.getWaitingUser(), removed.getTimestamp())));
+    }
+
+    @Override
+    public void removeFromQueue(String fileName, String recordId, String clientId, LocalDateTime localDateTime) {
+        filesMap.get(fileName)
+                .flatMap(serverFile -> serverFile.getRecord(recordId))
+                .forEach(record -> record.removeFromQueue(new WaitingClient(clientId, localDateTime)));
     }
 }
