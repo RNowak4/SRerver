@@ -76,7 +76,7 @@ public class SocketConfig implements HasLogger {
                         getLogger().info("Disconnected user: {}", userName);
                         filesManager.removeUserFromSystem(userName);
                         client.leaveRoom(userName);
-                        clientsMap = clientsMap.remove(userName);
+                        clientsMap = clientsMap.remove(client.getSessionId().toString());
                     });
         });
 
