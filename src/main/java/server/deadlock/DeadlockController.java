@@ -6,11 +6,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import server.files.api.IFilesManager;
+import server.snapshot.RecordSnapshot;
 import server.snapshot.Snapshot;
 import server.snapshot.SnapshotBuilder;
 import server.utils.HasLogger;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -73,9 +75,9 @@ public class DeadlockController implements HasLogger {
 
         final String address = String.format("%s:%s", server.getHost(), server.getPort());
         final String url = String.format("http://%s/snapshots/%s", address, id);
-        Try.of(() -> restTemplate.getForObject(url, Snapshot.class))
+        Try.of(() -> restTemplate.getForObject(url, Map.class))
                 .onFailure(th -> getLogger().warn("Error while getting snapshot from server: {}:{}", server.getHost(), server.getPort(), th))
-                .forEach(snapshot -> detector.addSnapshot(new SnapshotDescription(snapshot, server.getHost(), server.getPort())));
+                .forEach(snapshot -> detector.addSnapshot(new SnapshotDescription(new Snapshot((Map<String, Map<String, RecordSnapshot>>) snapshot), server.getHost(), server.getPort())));
     }
 
 }

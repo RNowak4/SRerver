@@ -9,6 +9,9 @@ public class RecordSnapshot {
     private String lockedBy;
     private List<WaitingClient> waiting = new ArrayList<>();
 
+    public RecordSnapshot() {
+    }
+
     public RecordSnapshot(String lockedBy) {
         this.lockedBy = lockedBy;
     }

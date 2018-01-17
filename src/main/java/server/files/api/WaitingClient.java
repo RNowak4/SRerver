@@ -8,6 +8,9 @@ public class WaitingClient {
     private String userId;
     private String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
 
+    public WaitingClient() {
+    }
+
     public WaitingClient(String id) {
         this.userId = id;
     }
@@ -23,6 +26,14 @@ public class WaitingClient {
 
     public String getTimestamp() {
         return timestamp;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
     }
 
     @Override
