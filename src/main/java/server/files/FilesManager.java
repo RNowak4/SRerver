@@ -134,7 +134,7 @@ class FilesManager implements HasLogger, IFilesManager {
                 .toTry()
                 .peek(isLocked -> {
                     if (isLocked) {
-                        sendLockPickedUpMessage(userName, recordId, filename);
+                        sendLockAssignedMessage(userName, recordId, filename);
                     }
                 })
                 .onSuccess(v -> getLogger().info("Successfully set lock to record: {} in file: {} by user: {}", recordId, filename, userName))
