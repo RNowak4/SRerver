@@ -1,6 +1,7 @@
 package server.deadlock;
 
 import io.vavr.control.Option;
+import io.vavr.control.Try;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -71,8 +72,8 @@ public class DeadlockController implements HasLogger {
 
         final String address = String.format("%s:%s", server.getHost(), server.getPort());
         final String url = String.format("http://%s/snapshots/%s", address, id);
-        Snapshot snap = restTemplate.getForObject(url, Snapshot.class);
-        detector.addSnapshot(new SnapshotDescription(snap, server.getHost(), server.getPort()));
+        Try.of(() -> restTemplate.getForObject(url, Snapshot.class))
+                .forEach(snapshot -> detector.addSnapshot(new SnapshotDescription(snapshot, server.getHost(), server.getPort())));
     }
 
 }
