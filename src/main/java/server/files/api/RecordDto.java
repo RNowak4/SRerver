@@ -5,12 +5,25 @@ public class RecordDto {
     private String filename;
     private String content;
     private String status;
+    private String lockedBy;
 
-    public RecordDto(String id, String filename, String content, String status) {
+    public RecordDto() {
+    }
+
+    public RecordDto(String id, String lockedBy, String filename, String content, String status) {
         this.id = id;
+        this.lockedBy = lockedBy;
         this.filename = filename;
         this.content = content;
         this.status = status;
+    }
+
+    public String getLockedBy() {
+        return lockedBy;
+    }
+
+    public void setLockedBy(String lockedBy) {
+        this.lockedBy = lockedBy;
     }
 
     public String getId() {

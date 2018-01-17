@@ -8,6 +8,7 @@ import server.clients.api.messages.SimpleMessage;
 import server.files.ServerFile;
 import server.files.api.IFilesManager;
 import server.files.api.RecordDto;
+import server.files.api.WaitingClient;
 
 import java.util.List;
 
@@ -47,7 +48,7 @@ public class FilesController {
     @RequestMapping(method = RequestMethod.GET, path = "/{id}/records")
     public List<RecordDto> getAllRecords(@PathVariable("id") final String fileName) {
         return filesManager.getRecordsForFile(fileName).toStream()
-                .map(record -> new RecordDto(record.getId(), fileName, String.valueOf(record.getData()).replaceAll("\0+", ""), "status"))
+                .map(record -> new RecordDto(record.getId(), record.getLockedBy().get().map(WaitingClient::getUserId).getOrNull(), fileName, String.valueOf(record.getData()).replaceAll("\0+", ""), "status"))
                 .toJavaList();
     }
 
