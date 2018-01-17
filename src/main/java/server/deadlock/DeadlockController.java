@@ -1,5 +1,7 @@
 package server.deadlock;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,6 +13,7 @@ import server.snapshot.Snapshot;
 import server.snapshot.SnapshotBuilder;
 import server.utils.HasLogger;
 
+import java.lang.reflect.Type;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.UUID;
@@ -18,10 +21,17 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 public class DeadlockController implements HasLogger {
+    private final Gson gson = new Gson();
+    private static final Type snapshotMapType;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ServerHolder serverHolder;
     private final IFilesManager filesManager;
     private final SnapshotBuilder snapshotBuilder;
+
+    static {
+        snapshotMapType = new TypeToken<Map<String, Map<String, RecordSnapshot>>>() {
+        }.getType();
+    }
 
     public DeadlockController(final ServerHolder serverHolder,
                               final IFilesManager filesManager,
@@ -75,8 +85,8 @@ public class DeadlockController implements HasLogger {
 
         final String address = String.format("%s:%s", server.getHost(), server.getPort());
         final String url = String.format("http://%s/snapshots/%s", address, id);
-        Try.of(() -> restTemplate.getForObject(url, Map.class))
-                .onFailure(th -> getLogger().warn("Error while getting snapshot from server: {}:{}", server.getHost(), server.getPort(), th))
+        Try.of(() -> gson.fromJson(restTemplate.getForObject(url, String.class), snapshotMapType))
+                .onFailure(th -> getLogger().warn("Error while getting snapshot from server: {}:{}", server.getHost(), server.getPort()))
                 .forEach(snapshot -> detector.addSnapshot(new SnapshotDescription(new Snapshot((Map<String, Map<String, RecordSnapshot>>) snapshot), server.getHost(), server.getPort())));
     }
 
