@@ -149,8 +149,6 @@ class FilesManager implements HasLogger, IFilesManager {
                         serverFile.getRecord(recordId)
                                 .toTry()
                                 .peek(record -> record.getLockingQueue().forEach(waitingClient -> {
-                                    bootstrap.getServer().getRoomOperations(waitingClient.getUserId()).sendEvent(RECORD_STATE_CHANGE,
-                                            new LockAssignedMessage("LOCK_PICKED_UP", recordId, filename));
                                     sendLockPickedUpMessage(waitingClient.getUserId(), recordId, filename);
                                 }))
                                 .andThen(() -> sendLockPickedUpMessage(userName, recordId, filename)))
