@@ -10,6 +10,7 @@ import server.snapshot.Snapshot;
 import server.snapshot.SnapshotBuilder;
 import server.utils.HasLogger;
 
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -60,7 +61,7 @@ public class DeadlockController implements HasLogger {
                 removed.getFilename(),
                 removed.getRecordId(),
                 removed.getWaitingUser(),
-                removed.getTimestamp());
+                removed.getTimestamp().format(DateTimeFormatter.ISO_DATE_TIME));
 
         getLogger().info("Removing waiting client: {} on file: {} record: {}",
                 removed.getWaitingUser(), removed.getFilename(), removed.getRecordId());
@@ -73,6 +74,7 @@ public class DeadlockController implements HasLogger {
         final String address = String.format("%s:%s", server.getHost(), server.getPort());
         final String url = String.format("http://%s/snapshots/%s", address, id);
         Try.of(() -> restTemplate.getForObject(url, Snapshot.class))
+                .onFailure(th -> getLogger().warn("Error while getting snapshot from server: {}:{}", server.getHost(), server.getPort(), th))
                 .forEach(snapshot -> detector.addSnapshot(new SnapshotDescription(snapshot, server.getHost(), server.getPort())));
     }
 
